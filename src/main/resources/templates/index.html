@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="layout/default">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+.section::after{content:'';display:block;clear:both;}
+.table_wrap::after{content:'';display:block;clear:both;}
+div.commuteChart {
+	width: 50%;
+	float: left;
+}
+div.vacationChart {
+	width: 50%;
+	float: right;
+}
+div.planWorkChart {
+	position:relative;
+	width: 50%;
+	float: left;
+	z-index:10;
+}
+div.realWorkChart {
+	position:relative;
+	width: 50%;
+	float: right;
+	z-index:10;
+}
+.noWorks{
+	height: 400px;
+}
+.noWorks p{
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:500px;
+	margin-top:-135px;
+	margin-left:-250px;
+	padding-top:160px;
+	text-align:center;
+	background:url(/images/icon_mainChart.png) center center no-repeat;
+	background-size:113px;
+	font-weight:600;
+	
+}
+.project_wrap table{width:90% !important;margin:0 auto;}
+
+</style>
+<!-- 근태 차트  -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+	// Load google charts
+	google.charts.load('current', {
+		'packages' : [ 'corechart' ]
+	});
+	google.charts.setOnLoadCallback(commuteChart);
+	google.charts.setOnLoadCallback(vacationChart);
+
+	// Draw the chart and set the chart values
+	function commuteChart() {
+		var commuteStatus = google.visualization.arrayToDataTable([
+				[ '근태', '근태 구분별 현황' ], 
+				[ '정상', [[${commuteStatusCount[0]}]] ], 
+				[ '지각', [[${commuteStatusCount[1]}]] ], 
+				[ '조퇴', [[${commuteStatusCount[2]}]] ],
+				[ '결근', [[${commuteStatusCount[3]}]] ], 
+				[ '휴가', [[${commuteStatusCount[4]}]] ] 
+		]);
+
+		// Optional; add a title and set the width and height of the chart
+		var commuteStatusOptions = {
+			'title':'근태 현황', // 타이틀
+			'pieHole' : 0.4,
+			// 'pieSliceTextStyle': {
+			//	color: 'black',
+			// }, // 글자 색
+			'legend' : 'none', // 범례옵션
+			'width' : 400,
+			'height' : 400
+		};
+
+		// Display the chart inside the <div> element with id="piechart"
+		var commuteChart = new google.visualization.PieChart(document.getElementById('commuteChart'));
+		commuteChart.draw(commuteStatus, commuteStatusOptions);
+	}
+	
+	function vacationChart() {
+		var vacationStatus = google.visualization.arrayToDataTable([
+				[ '휴가', '휴가 현황' ], 
+				[ '남은 휴가', [[${totalVacation}]]-[[${usedVacation}]] ], 
+				[ '사용 휴가', [[${usedVacation}]] ] 
+		]);
+
+		// Optional; add a title and set the width and height of the chart
+		var vacationStatusOptions = {
+			'title':'휴가 현황', // 타이틀
+			'pieHole' : 0.4,
+			// 'pieSliceTextStyle': {
+			//	color: 'black',
+			// }, // 글자 색
+			'legend' : 'none', // 범례옵션
+			'width' : 400,
+			'height' : 400
+		};
+
+		// Display the chart inside the <div> element with id="piechart"
+		var vacationChart = new google.visualization.PieChart(document.getElementById('vacationChart'));
+		vacationChart.draw(vacationStatus, vacationStatusOptions);
+	}
+</script>
+<!-- 근태 차트 끝 -->
+<title>메인페이지</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script th:if="${!projectList.isEmpty()}" th:inline="javascript">
+
+	/* bxslider */
+	$(document).ready(function(){
+	    var slider = $('.project_wrap').bxSlider({
+	    	auto: false,
+	    	speed: 500,
+	    	pause: 4000,
+	    	mode:'horizontal',
+	    	autoControls: true,
+	    	controls: false,
+	    	pager: false,
+	    	touchEnabled: false
+	    });
+	    $("#slider-next").click(function(){
+	    	nextbtn()
+	    	slider.goToNextSlide();
+	    	return false;
+	    });
+	    $("#slider-prev").click(function(){
+	    	slider.goToPrevSlide();
+	    	prevbtn()
+	    	return false;
+	    })
+	});
+
+	var prjListNum = 0;
+	var prjLength = [[${projectListSize}]];
+	result();
+	
+	function prevbtn() {
+		if (prjListNum == 0) prjListNum = prjLength;
+		else prjListNum-=1;
+		result();
+	}
+	
+	function nextbtn() {
+		if (prjListNum == prjLength) prjListNum = 0;
+		else prjListNum+=1;
+		result();
+	}
+	
+	function result() {
+		$.ajax({
+			url:"/user/calcWorks",
+			data:{
+				prjListNum:prjListNum
+			},
+			success:function(mainViewProjectList){
+				if (prjLength >= 0) {
+					var planComplete = mainViewProjectList.planComplete;
+					var planIng = mainViewProjectList.planIng;
+					var planUnset = mainViewProjectList.planUnset;
+					var realComplete = mainViewProjectList.realComplete;
+					var realIng = mainViewProjectList.realIng;
+					var realUnset = mainViewProjectList.realUnset;
+
+					// Load google charts
+					google.charts.load('current', {
+						'packages' : [ 'corechart' ]
+					});
+
+					if (!(planComplete + planIng + planUnset) == 0) {
+						google.charts.setOnLoadCallback(planWorkChart);
+						document.getElementById("planWorkChart").style.display = "block";
+						document.getElementById("noWorks").style.display = "none";
+					} else {
+						document.getElementById("planWorkChart").style.display = "none";
+						document.getElementById("noWorks").style.display = "block";
+					}
+					
+					if (!(realComplete + realIng + realUnset) == 0) {
+						google.charts.setOnLoadCallback(realWorkChart);
+						document.getElementById("realWorkChart").style.display = "block";
+						document.getElementById("noWorks").style.display = "none";
+					} else {
+						document.getElementById("realWorkChart").style.display = "none";
+						document.getElementById("noWorks").style.display = "block";
+					}
+					
+					// Draw the chart and set the chart values
+					function planWorkChart() {
+						var planWorkStatus = google.visualization.arrayToDataTable([
+								[ '계획', '계획 작업 현황' ],
+								[ '완료', planComplete ], 
+								[ '진행중', planIng ], 
+								[ '미시작', planUnset ]
+						]);
+
+						// Optional; add a title and set the width and height of the chart
+						var planWorkStatusOptions = {
+							'title':'계힉 작업 현황', // 타이틀
+							'pieHole' : 0.4,
+							// 'pieSliceTextStyle': {
+							//	color: 'black',
+							// }, // 글자 색
+							'legend' : 'none', // 범례옵션
+							'width' : 400,
+							'height' : 400
+						};
+
+						// Display the chart inside the <div> element with id="piechart"
+						var planWorkChart = new google.visualization.PieChart(document.getElementById('planWorkChart'));
+						planWorkChart.draw(planWorkStatus, planWorkStatusOptions);
+					}
+					
+					function realWorkChart() {
+						var realWorkStatus = google.visualization.arrayToDataTable([
+								[ '실제', '실제 작업 현황' ], 
+								[ '완료', realComplete ], 
+								[ '진행중', realIng ], 
+								[ '미시작', realUnset ]
+						]);
+
+						// Optional; add a title and set the width and height of the chart
+						var realWorkStatusOptions = {
+							'title':'실제 작업 현황', // 타이틀
+							'pieHole' : 0.4,
+							// 'pieSliceTextStyle': {
+							//	color: 'black',
+							// }, // 글자 색
+							'legend' : 'none', // 범례옵션
+							'width' : 400,
+							'height' : 400
+						};
+
+						// Display the chart inside the <div> element with id="piechart"
+						var realWorkChart = new google.visualization.PieChart(document.getElementById('realWorkChart'));
+						realWorkChart.draw(realWorkStatus, realWorkStatusOptions);
+					}
+				}
+			}
+		});
+	}
+</script>
+</head>
+<body>
+	<div th:replace="fragments/header :: headerFragment"></div>
+
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+		<div class="section_inner">
+			<div class="article half">
+				<div class="table_wrap list">
+					<div class="table_top">	
+						<span>공지사항</span>
+						<a th:href="@{/user/selectNoticeList}">더보기<i class="fas fa-chevron-right"></i></a>
+					</div>
+					<table>
+						<colgroup>
+							<col width="150px">
+							<col width="*">
+							<col width="150px">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>분류</th>
+								<th>제목</th>
+								<th>등록시간</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="notice:${noticeList}">
+								<td th:text="${notice.ntCate}"></td>
+								<td class="tit ellipsis"><a th:href="@{/user/selectNotice(ntNo=${notice.ntNo})}" th:text="${notice.ntTitle}"></a></td>
+								<th:block th:if="${today==#dates.format(notice.ntDate,'yyyy-MM-dd')}">
+									<td th:text="${#dates.format(notice.ntDate,'HH:mm')}"></td>
+								</th:block>
+								<th:block th:unless="${today==#dates.format(notice.ntDate,'yyyy-MM-dd')}">
+									<td th:text="${#dates.format(notice.ntDate,'yyyy-MM-dd')}"></td>
+								</th:block>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!-- //table_wrap end -->
+			</div>
+			<!-- //article end -->
+		
+			<div class="article half">
+				<div th:if="${!approvalList.isEmpty()}" class="table_wrap list">
+					<div class="table_top">	
+						<span>결재 할 문서</span>
+						<a th:href="@{/user/selectApprovalListTo}">더보기<i class="fas fa-chevron-right"></i></a>
+					</div>
+					<table>
+						<colgroup>
+							<col width="*">
+							<col width="150px">
+							<col width="150px">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>제목</th>
+								<th>기안자</th>
+								<th>등록일</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="approval:${approvalList}">
+								<td class="tit ellipsis"><a th:href="@{/user/selectApprovalView(apNo=${approval.apNo})}" th:text="${approval.apTitle}"></a></td>
+								<td th:text="${approval.memName}"></td>
+								<td th:text="${#dates.format(approval.apInsertdate,'yyyy-MM-dd')}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div th:if="${approvalList.isEmpty()}" class="table_wrap list">
+					<div class="table_top">	
+						<span>결재 할 문서</span>
+						<a th:href="@{/user/selectApprovalListTo}">더보기<i class="fas fa-chevron-right"></i></a>
+					</div>
+					<table>
+						<colgroup>
+							<col width="*">
+							<col width="150px">
+							<col width="150px">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>제목</th>
+								<th>기안자</th>
+								<th>등록일</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td colspan="3">결재 할 문서가 없습니다.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!-- //table_wrap end -->
+			</div>
+			<!-- //article end -->
+			<div th:if="${!projectList.isEmpty()}" class="article cl" style="position:relative;">
+				<div class="table_top">	
+					<span>참여중인 프로젝트</span>
+					<a th:href="@{/user/selectAttendingProjectList}">더보기<i class="fas fa-chevron-right"></i></a>
+				</div>
+				<!-- 그래프 적용 시작 -->
+				<div class="planWorkChart" id="planWorkChart" align="center"></div>
+				<div class="realWorkChart" id="realWorkChart" align="center"></div>
+				<div class="noWorks" id="noWorks"><p>WBS가 없습니다</p></div>
+				<!-- 그래프 적용 끝 -->
+				<div class="project_wrap">
+					<div th:each="project:${projectList}" class="table_wrap list scrollX">
+						<table>
+							<colgroup>
+								<col width="*">
+								<col width="180px">
+								<col width="210px">
+								<col width="210px">
+							</colgroup>
+							<thead>
+								<tr>
+									<th>프로젝트명</th>
+									<th>PM</th>
+									<th>시작일</th>
+									<th>종료일</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><a th:href="@{/user/projectDetail(prjCode=${project.projectInfo.prjCode})}" th:text="${project.projectInfo.prjName}"></a></td>
+									<td th:text="${project.projectInfo.prjPm}"></td>
+									<td th:text="${project.projectInfo.prjStart}"></td>
+									<td th:text="${project.projectInfo.prjEnd}"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<!-- //table_wrap end -->
+				</div><!-- //project_wrap end -->
+				
+				<div class="sliderBtn">
+					<a href="" id="slider-prev" class="sliderPrevBtn"></a>
+					<a href="" id="slider-next" class="sliderNextBtn"></a>
+				</div>
+				
+			</div>
+			<!-- //article end -->
+	
+			<div class="article cl">
+				<div class="table_top">	
+					<span>근태 및 휴가</span>
+					<a th:href="@{/user/selectCommuteList}">더보기<i class="fas fa-chevron-right"></i></a>
+				</div>
+				<div class="table_wrap list">
+					<!-- 그래프 적용 시작 -->
+					<div class="commuteChart" id="commuteChart" align="center"></div>
+					<div class="vacationChart" id="vacationChart" align="center"></div>
+					<!-- 그래프 적용 끝 -->
+					<table>
+						<colgroup>
+							<col width="*">
+							<col width="*">
+							<col width="*">
+							<col width="*">
+							<col width="*">
+							<col width="*">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>정상</th>
+								<th>지각</th>
+								<th>조퇴</th>
+								<th>결근</th>
+								<th>휴가</th>
+								<th>합계</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td th:each="statusCount:${commuteStatusCount}"
+									th:text="${statusCount}"></td>
+								<td th:text="${#lists.size(commuteTotalCount)}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<!-- //section_inner end -->
+	</div>
+	<!-- //section end -->
+</body>
+</html>

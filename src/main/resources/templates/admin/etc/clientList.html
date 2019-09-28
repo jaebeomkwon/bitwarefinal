@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>고객사</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<script>
+$(function(){
+	var cate = $("#searchCondition").val();
+	$("#category option[value="+cate+"]").attr("selected",true);
+	
+	var keyword = $("#searchKeyword").val();
+	$("#keyword").val(keyword);
+});
+</script>
+<script>
+$(document).ready(function() {
+	$("#allCheckBox").click(function(){
+		var chk = $("#allCheckBox").prop("checked");
+		if(chk){
+			$(".checkBox").prop("checked",true);
+		}else{
+			$(".checkBox").prop("checked",false);
+		}
+	});
+	$(".checkBox").click(function(){
+		$("#allCheckBox").prop("checked",false);
+	});
+	$("#deleteBtn").click(function(){
+		var confirm_val = confirm("정말 삭제하시겠습니까?");
+		if(confirm_val){
+			var checkBoxArr = new Array();
+			$("input[class='checkBox']:checked").each(function(){
+				checkBoxArr.push($(this).val());
+			})
+			$.ajax({
+				url:"/admin/deleteClientCheckBox",
+				type:"post",
+				data:{checkBoxArr:checkBoxArr},
+				success:function(result){
+					alert(result);
+					location.href="/admin/selectClientList";
+				}
+			});
+		}
+	});
+});
+</script>
+<script>
+window.onload=function(){
+	
+	var modal = document.getElementById('myModal');
+
+	document.getElementById("myBtn").onclick = function() {
+    	modal.style.display = "block";
+	}
+	document.getElementsByClassName("close")[0].onclick = function() {
+    	modal.style.display = "none";
+	}
+	window.onclick = function(event) {
+    	if (event.target == modal) {
+        	modal.style.display = "none";
+    	}
+	}
+}
+</script>
+<style>
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 2; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%; /* Could be more or less, depending on screen size */                          
+}
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+<style>
+/* The Modal (background) */
+.modalUpdate {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 2; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-contentUpdate {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%; /* Could be more or less, depending on screen size */                          
+}
+/* The Close Button */
+.closeUpdate {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.closeUpdate:hover,
+.closeUpdate:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+<script>
+$(function(){
+	var modalUpdate = document.getElementById('myModalUpdate');
+
+	function updateModal() {
+		modalUpdate.style.display = "block";
+	}
+	document.getElementsByClassName("closeUpdate")[0].onclick = function() {
+		modalUpdate.style.display = "none";
+	}
+	window.onclick = function(event) {
+    	if (event.target == modalUpdate) {
+    		modalUpdate.style.display = "none";
+    	}
+	}
+	
+	$('.btn').click(function(){
+		var clientNo = $(this).next().val();
+		$.ajax({
+			url:"/admin/selectClientByClientNoAjax",
+			data:{
+				clientNo:clientNo
+			},
+			datatype:'json',
+			success:function(clientList){
+				var client = clientList[0];
+				$("#clientNo").val(client.clientNo);
+				$("#clientName").val(client.clientName);
+				$("#clientTel").val(client.clientTel);
+				$("#clientCompany").val(client.clientCompany);
+				$("#clientDeptName").val(client.clientDeptName);
+				$("#clientRanks").val(client.clientRanks);
+				$("#clientNote").val(client.clientNote);
+				var str = "<a href='/admin/deleteClient?clientNo="+client.clientNo+"'>삭제</a>";
+				$("#deleteClient").append(str);
+				updateModal();
+			}
+		});
+	});
+});
+</script>
+</head>
+<body>
+
+<div th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+<div class="section_inner">
+	<input type="hidden" id="toggleCheck" value="toggleOn">
+	<h2>고객사 (관리자)</h2>
+	<div class="article">
+		<!-- 검색 시작 -->
+		<form th:action="@{/admin/selectClientList}">
+			<div class="board_search">
+				<div class="board_search_inner">
+					<div class="select_wrap">
+				        <select name="searchCondition" id="category">
+				        	<option value="clientName">이름</option>
+				        	<option value="clientCompany">회사명</option>
+				        </select>
+				    </div>
+				    <div class="search">
+				        <input name="searchKeyword" id="keyword" type="text">
+				        <input type="submit" value="검색">
+				    </div>
+				</div>
+			</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		<div class="table_wrap list">
+			<table>
+				<colgroup>
+					<col width="80px">
+					<col width="110px">
+					<col width="*">
+					<col width="130px">
+					<col width="110px">
+					<col width="110px">
+					<col width="110px">
+				</colgroup>
+				<thead>
+					<tr>
+						<th><input type="checkbox" name="allCheckBox" id="allCheckBox"></th>
+						<th>이름</th>
+						<th>전화번호</th>
+						<th>회사명</th>
+						<th>부서명</th>
+						<th>직책</th>
+						<th>비고</th>
+					</tr>
+				</thead>
+				</tbody>
+					<tr th:each="client:${clientList}">
+						<td><input type="checkbox" name="checkBox" class="checkBox" th:value="${client.clientNo}"></td>
+						<td th:text="${client.clientName}" class="btn" required></td>
+						<input type="hidden" th:value="${client.clientNo}">
+						<td th:text="${client.clientTel}"></td>
+						<td th:text="${client.clientCompany}"></td>
+						<td th:text="${client.clientDeptName}"></td>
+						<td th:text="${client.clientRanks}"></td>
+						<td th:text="${client.clientNote}"></td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="btn_wrap">
+				<div class="box_right">
+					<button type="button" class="btn btn_point" id="deleteBtn">삭제</button>
+					<input type="button" class="btn btn_point" id="myBtn" value="등록">
+				</div>
+			</div>
+		</div>
+		<div class="paging">
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/admin/selectClientList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+			</span>
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.prevPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+			</span>
+			<span th:each="num:${block}">
+				<span th:if="${num==page.curPage }">
+					<a th:href="@{/admin/selectClientList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+				</span>
+				<span th:unless="${num==page.curPage }">
+					<a th:href="@{/admin/selectClientList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+				</span>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+			</span>
+		</div><!-- //paging -->
+	</div>
+	
+	<div id="myModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span> 
+			<h2>고객사 등록</h2>
+			<form th:action="@{/admin/insertClient}" method="post">
+				<div class="article">
+					<div class="table_wrap view">
+						<table>
+							<colgroup>
+								<col width="120px">
+								<col width="*">
+							</colgroup>
+							<tbody>
+								<tr>
+									<th th:text="이름"></th>
+									<td><input name="clientName" type="text" class="w100p" required></td>
+								</tr>
+								<tr>
+									<th th:text="전화번호"></th>
+									<td><input name="clientTel" type="tel" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="회사명"></th>
+									<td><input name="clientCompany" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="부서명"></th>
+									<td><input name="clientDeptName" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="직급"></th>
+									<td><input name="clientRanks" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="비고"></th>
+									<td><input name="clientNote" type="text" class="w100p"></td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="btn_wrap">
+							<div class="box_right">
+								<input type="submit" class="btn btn_point" value="등록">
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div id="myModalUpdate" class="modalUpdate">
+		<div class="modal-contentUpdate">
+			<span class="closeUpdate">&times;</span>
+			<h2>고객사 수정</h2>
+			<form th:action="@{/admin/updateClient}" method="post">
+				<input type="hidden" name="clientNo" id="clientNo">
+				<div class="article">
+					<div class="table_wrap view">
+						<table>
+							<colgroup>
+								<col width="120px">
+								<col width="*">
+							</colgroup>
+							<tbody>
+								<tr>
+									<th th:text="이름"></th>
+									<td><input name="clientName" id="clientName" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="전화번호"></th>
+									<td><input name="clientTel" id="clientTel" type="tel" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="회사명"></th>
+									<td><input name="clientCompany" id="clientCompany" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="부서명"></th>
+									<td><input name="clientDeptName" id="clientDeptName" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="직급"></th>
+									<td><input name="clientRanks" id="clientRanks" type="text" class="w100p"></td>
+								</tr>
+								<tr>
+									<th th:text="비고"></th>
+									<td><input name="clientNote" id="clientNote" type="text" class="w100p"></td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="btn_wrap">
+							<div class="box_right">
+								<input type="submit" class="btn btn_point" value="수정">
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div><!-- section_inner end -->
+</div>
+</body>
+</html>

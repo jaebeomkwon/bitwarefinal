@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <title>Chat Application</title>
+  <link rel="stylesheet" href="../css/chat/chat.css" />
+  <style>
+  #username-page{width:100%;height:100%;}
+  .username-page-container{height:100%;}
+  .chat-container{width:100%;height:100%;margin:0;}
+  #chat-page ul{height:calc(100vh - 38px);}
+  #chat-page #messageForm{padding:0;}
+  .form-group{margin-bottom:0;}
+  .input-group{}
+  #messageForm .input-group input{}
+  .accent{position: fixed;width: 120px;left: 50%;margin-left: -60px;top: 40%;}
+  </style>
+</head>
+<body>
+<noscript>
+  <h2>Sorry! Your browser doesn't support Javascript</h2>
+</noscript>
+
+<div id="username-page">
+  <div class="username-page-container">
+    <!-- <h1 class="title">Enter a username and room ID</h1> -->
+    <form id="usernameForm" name="usernameForm">
+    	<input type="hidden" id="memId" th:value="${memDto.memId}"/>
+      <div class="form-group">
+        <input type="hidden" id="name" placeholder="Username" th:value="${sessionName}" autocomplete="off" class="form-control" />
+      </div>
+      <div class="form-group">
+        <input type="hidden" id="room-id" placeholder="Room ID" th:value="${roomId}" autocomplete="off" class="form-control" />
+      </div>
+      <input type="hidden" id="chance" value="1">
+      <div class="form-group">
+        <button type="submit" id="test1" class="accent username-submit">Start Chatting</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="chat-page" class="hidden">
+  <div class="chat-container">
+    <div class="chat-header hidden">
+      <h2>Chatroom [<span id="room-id-display"></span>]</h2>
+    </div>
+    <div class="connecting">
+      Connecting...
+    </div>
+    <ul id="messageArea">
+<!--     	<li class="chat-message"> -->
+<!--     		<i style="background-color:rgb(255,133,175);">권</i> -->
+<!--     		<span>권재범</span> -->
+<!--     		<p>aaaaaaa</p> -->
+<!--     	</li> -->
+    </ul>
+    <form id="messageForm" name="messageForm" nameForm="messageForm">
+      <div class="form-group">
+        <div class="input-group clearfix">
+        	<input type="hidden" id="sender" name="sender" th:value="${sessionName}">
+        	<input type="hidden" id="receiver" name="receiver" th:value="${memDto.memName}"/>
+        	<input type="hidden" id="roomId" name="roomId" th:value="${roomId}"/>
+          <input type="text" id="message" name="content" autocomplete="off" class="form-control"/>
+          <button type="submit" id="sendBtn" class="primary">Send</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/common/jquery-1.9.1.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="/webjars/js-cookie/js.cookie.js"></script>
+<script src="/js/chat/chat.js"></script>
+<script>
+$(function(){
+	var roomId = $("#room-id").val();
+	var messageArea = document.querySelector('#messageArea');
+	$.ajax({
+		url:"/user/selectChatListAjax",
+		data:{roomId:roomId},
+		success:function(chatList){
+
+			for(var i in chatList){
+			
+				var messageElement = document.createElement('li');
+				messageElement.classList.add('chat-message');
+	
+				var avatarElement = document.createElement('i');
+				var avatarText = document.createTextNode(chatList[i].sender[0]);
+				avatarElement.appendChild(avatarText);
+				avatarElement.style['background-color'] = getAvatarColor(chatList[i].sender);
+				messageElement.appendChild(avatarElement);
+	
+				var usernameElement = document.createElement('span');
+				var usernameText = document.createTextNode(chatList[i].sender);
+				usernameElement.appendChild(usernameText);
+				messageElement.appendChild(usernameElement);
+				
+				var textElement = document.createElement('p');
+				var messageText = document.createTextNode(chatList[i].content);
+				textElement.appendChild(messageText);
+				messageElement.appendChild(textElement);
+				
+				messageArea.appendChild(messageElement);
+				
+				messageArea.scrollTop = messageArea.scrollHeight;
+			}
+		}
+	});
+	var colors = [
+	    '#2196F3', '#32c787', '#00BCD4', '#ff5652',
+	    '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
+	];
+	function getAvatarColor(messageSender) {
+		var hash = 0;
+		for (var i = 0; i < messageSender.length; i++) {
+			hash = 31 * hash + messageSender.charCodeAt(i);
+		}
+		var index = Math.abs(hash % colors.length);
+		return colors[index];
+	}
+	
+	$("#test1").trigger("click");
+});
+</script>
+</body>
+</html>

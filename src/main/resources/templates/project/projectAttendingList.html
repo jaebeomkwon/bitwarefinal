@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+		xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>참여중인 프로젝트</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectList.js}"></script>
+</th:block>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<h2>프로젝트</h2>
+		<div class="article">
+		<!-- 검색 시작 -->
+		<form th:action="@{/user/selectAttendingProjectList}">
+		<div class="board_search">
+			<div class="board_search_inner">
+				<div class="select_wrap">
+					<select name="searchCondition" id="category">
+						<option value="prjName">프로젝트명</option>
+						<option value="prjMothercompany">마더업체</option>
+					</select>
+				</div>
+				<div class="search">
+					<input type="text" name="searchKeyword" id="keyword">
+					<input type="submit" value="검색">
+				</div>
+			</div>
+		</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+		<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+			<div class="table_wrap list">
+				<table>
+					<colgroup>
+						<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+						<col width="50px">
+						</th:block>
+						<th:block th:unless="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+						</th:block>
+						<th:block th:if="${sessionDeptName=='경영진'}">
+						<col width="50px">
+						</th:block>
+						<th:block th:unless="${sessionDeptName=='경영진'}">
+						</th:block>
+						<col width="*">
+						<col width="110px">
+						<col width="130px">
+						<col width="130px">
+						<col width="130px">
+					</colgroup>
+					<thead>
+						<tr>
+							<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							<th><input type="checkbox" name="allCheckBox" id="projectAllCheckBox" onclick="projectCheckAll(this.checked)"></th>
+							</th:block>
+							<th:block th:unless="${sessionRanks=='부장'} and ${sessionRDeptName=='개발부'}">
+							</th:block>
+							<th:block th:if="${sessionDeptName=='경영진'}">
+							<th><input type="checkbox" name="allCheckBox" id="projectAllCheckBox" onclick="projectCheckAll(this.checked)"></th>
+							</th:block>
+							<th:block th:unless="${sessionDeptName=='경영진'}">
+							</th:block>
+							<th>프로젝트명</th>
+							<th>PM</th>
+							<th>시작일</th>
+							<th>종료일</th>
+							<th>마더업체</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="Infos : ${prjInfos}">
+							<input type="hidden" id="pmPrjCode" th:value="${Infos.prjCode}">
+							<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							<td><input type="checkbox" name="projectAllCheckBox" id="projectCheckBox" class="projectCheckBox" th:value="${Infos.prjCode}"></td>
+							</th:block>
+							<th:block th:unless="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							</th:block>
+							<th:block th:if="${sessionDeptName=='경영진'}">
+							<td><input type="checkbox" name="projectAllCheckBox" id="projectCheckBox" class="projectCheckBox" th:value="${Infos.prjCode}"></td>
+							</th:block>
+							<th:block th:unless="${sessionDeptName=='경영진'}">
+							</th:block>
+							<td class="tit"><a th:href="@{/user/projectDetail(prjCode=${Infos.prjCode})}" th:text="${Infos.prjName}"></a></td>
+							<td th:text="${Infos.prjPm}"></td>
+							<td th:text="${Infos.prjStart}"></td>
+							<td th:text="${Infos.prjEnd}"></td>
+							<td th:text="${Infos.prjMothercompany}"></td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" id="insertProjectBtn" onclick="insertProjectModal()">프로젝트 생성</a>
+						<a class="btn btn_point" id="deleteProjectBtn" onclick="deleteProjectAjax()">프로젝트 삭제</a>	
+					</div>
+				</div>
+			</div><!-- //table_wrap end -->
+			<!-- 페이징 -->
+			<div th:align="center">
+				<div class="paging">
+					<span th:if="${page.curBlock > 1 }">
+						<a th:href="@{/user/selectAttendingProjectList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+					</span>
+					<span th:if="${page.curBlock > 1}">
+						<a th:href="@{/user/selectAttendingProjectList(curPage=${page.prevPage}, searchCondition=${search.searchCondition}, searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+					</span>
+					<span th:each="num:${block}">
+						<span th:if="${num==page.curPage }">
+							<a th:href="@{/user/selectAttendingProjectList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+						</span>
+						<span th:unless="${num==page.curPage }">
+							<a th:href="@{/user/selectAttendingProjectList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+						</span>
+					</span>
+					<span th:if="${page.curBlock < page.totBlock }">
+						<a th:href="@{/user/selectAttendingProjectList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+					</span>
+					<span th:if="${page.curBlock < page.totBlock }">
+						<a th:href="@{/user/selectAttendingProjectList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+					</span>
+				</div>
+			</div>
+			<!-- 페이징 끝 -->
+		</div><!-- article end -->
+	</div><!-- section inner end -->
+</div><!-- //section end -->
+
+	<!-- 프로젝트 생성 modal -->
+	<div class="modal" id="insertProjectModal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">프로젝트 생성</h4>
+				</div>
+				<div class="modal-body">
+				<form action="/user/insertProject" method="post" id="frmInsertProjcet">
+					<!-- 프로젝트 생성처리 form -->
+						<div class="form-group">
+							<label>프로젝트명</label>
+							<input class="form-control" type="text" name="prjName" id="prjName" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label>마더업체</label>
+							<input class="form-control" type="text" name="prjMothercompany" id="prjMothercompany" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label>계약금</label>
+							<input class="form-control" type="number" name="prjDeposit" id="prjDeposit" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label>사업비</label>
+							<input class="form-control" type="number" name="prjWorkingExpenses" id="prjWorkingExpenses" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label>시작일</label>
+							<input class="form-control" type="date" name="prjStart" id="prjStart" autocomplete="off" />
+						</div>
+						<div class="form-group">
+							<label>종료일</label>
+							<input class="form-control" type="date" name="prjEnd" id="prjEnd" autocomplete="off" />
+						</div>
+				<div class="table_wrap list">
+				<table>
+					<h4>프로젝트 참여인원 선택</h4>
+					<tr>
+						<th><input type="checkbox" name="allCheckBox" id="memberAllCheckBox" onclick="memberCheckAll(this.checked)"></th>
+						<th>이름</th>
+						<th>부서</th>
+						<th>팀</th>
+						<th>직급</th>
+					</tr>
+					<tr th:each="worker : ${members}">
+						<td><input type="checkbox" name="memIdChk" id="memId" th:value="${worker.memId}" class="checkBoxArr"></td>
+							<td th:text="${worker.memName}"></td>
+							<td th:text="${worker.deptName}"></td>
+							<td th:text="${worker.teamName}"></td>
+							<td th:text="${worker.ranks}"></td>
+					</tr>
+				</table>
+				</div>
+				</form>
+				</div>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" onclick="insertProject()">생성</a>
+						<a class="btn btn_point" data-dismiss="modal">취소</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

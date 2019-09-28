@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>프로젝트 상세페이지</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/simptip.min.css}">
+<link th:href='@{/fullcalendar/packages/core/main.css}' rel='stylesheet' />
+<link th:href='@{/fullcalendar/packages/daygrid/main.css}' rel='stylesheet' />
+<link th:href='@{/fullcalendar/packages/timegrid/main.min.css}' rel='stylesheet' />
+<link th:href='@{/fullcalendar/packages/list/main.min.css}' rel='stylesheet' />
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectWbs.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectList.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/calendar.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/stringBuffer.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/makeRound.js}"></script>
+<script th:src='@{/fullcalendar/packages/core/main.js}'></script>
+<script th:src='@{/fullcalendar/packages/interaction/main.min.js}'></script>
+<script th:src='@{/fullcalendar/packages/daygrid/main.min.js}'></script>
+<script th:src='@{/fullcalendar/packages/timegrid/main.min.js}'></script>
+<script th:src='@{/fullcalendar/packages/list/main.min.js}'></script>
+</th:block>
+<style>
+  #calendar {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  #insertProjectWbsList{width:100%;overflow-x:auto;padding-top:100px;box-sizing:border-box;}
+</style>
+
+<style>
+input[type='text']{
+	border: 0px;
+	width: 100%;
+}
+input[type='date']{
+	border: 0px;
+	width: 100%;
+	text-align:right;
+}
+ 
+#prjAttend {
+	font-weight: bold;
+	text-align: center;
+}
+
+.modal-content{width:100% !important;}
+
+.section_inner{width:calc(100vw - 257px);}
+
+.table_wrap thead th{height:33px;line-height:30px;}
+
+</style>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+
+<div th:replace="fragments/aside :: asideFragment"></div>
+
+<div class="section_inner">
+	<h2>프로젝트 상세페이지</h2>
+		<div class="article">
+			<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+			<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+			<div class="table_wrap view">
+				<table>
+				<!-- 상단의 프로젝트 정보 -->
+					<colgroup>
+						<col width="60px">
+						<col width="120px">
+						<col width="60px">
+						<col width="120px">
+					</colgroup>
+						<tbody>
+							<tr>
+								<th>프로젝트명</th>
+								<td colspan="3" th:text="${prjInfo.prjName}"></td>
+							</tr>
+							<tr>
+								<th>PM</th>
+								<td colspan="3" th:text="${prjInfo.prjPm}"></td>
+							</tr>
+							<tr>
+								<th>계약금</th>
+								<td th:text="${prjInfo.prjDeposit}" class="commaN">원</td>
+								<th>사업비</th>
+								<td th:text="${prjInfo.prjWorkingExpenses}" class="commaN">원</td>
+							</tr>
+							<tr>
+								<th>시작일</th>
+								<td th:text="${prjInfo.prjStart}"></td>
+								<input type="hidden" id="prjStart" th:value="${prjInfo.prjStart}">
+								<th>종료일</th>
+								<td th:text="${prjInfo.prjEnd}"></td>
+								<input type="hidden" id="prjEnd" th:value="${prjInfo.prjEnd}">
+							</tr>
+							<tr>
+								<th>마더업체</th>
+								<td th:text="${prjInfo.prjMothercompany}"></td>
+								<th>참여인원</th>
+								<td><input class="btn btn_point" type="button"
+										value="참여인원 리스트" onclick="projectAttendMemberModal()"></td>
+							</tr>
+							<input type="hidden" id="prjCompletion" th:value="${prjInfo.prjCompletion}">
+						</tbody>
+				<!-- 상단의 프로젝트 정보 끝-->
+				</table>
+			</div>
+			<div class="btn_wrap">
+				<div class="box_right">
+					<a class="btn btn_point" th:href="@{/user/selectProjectRiskList(prjCode=${prjInfo.prjCode})}">위험관리대장 목록</a>
+					<a class="btn btn_point" id="updateProjectBtn" onclick="projectUpdateModal()">프로젝트 정보 수정</a>
+				</div>
+			</div>	
+			
+			<form action="#" method="post" id="insertProjectWbsList" class="table_wrap list">
+				<table>
+					<colgroup>
+						<col width="50px">
+						<col width="100px">
+						<col width="500px">
+						<col width="180px">
+						<col width="180px">
+						<col width="180px">
+						<col width="180px">
+						<col width="100px">
+						<col width="100px">
+						<col width="120px">
+						<col width="120px">			
+					</colgroup>
+					<!-- 업무구분 등 WBS 구분열 -->
+					<thead id='thead'>
+					<input type="hidden" name="prjStart" id="prjStart" th:value="${prjInfo.prjStart}">
+					<input type="hidden" name="prjEnd" id="prjEnd" th:value="${prjInfo.prjEnd}">
+					<input type="hidden" name="prjCode" id="prjCode" th:value="${prjInfo.prjCode}">
+						<tr>
+							<th><input type="checkbox" onclick="checkAll(this.checked)"/></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="첫째 줄에 작업리스트를 추가합니다.">
+								<button type="button" class="btn btn_point" onclick="createTopList()">생성</button></span>
+							</th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="WBS 작업명을 기록합니다.">WBS 작업 목록</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="계획한 작업 시작일을 기록합니다.">계획 작업 시작일</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="계획한 작업 종료일을 기록합니다.">계획 작업 종료일</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="실제로 작업이 시작된 날을 기록합니다.">실제 작업 시작일</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="실제로 작업이 종료된 날을 기록합니다.">실제 작업 종료일</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="해당 작업의 담당자를 기록합니다.">담당자</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="해당 작업에서 발생한 산출물을 기록합니다.">산출물</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="해당 작업의 계획 시작일과 오늘 날짜를 비교하여 진행률을 표시합니다.">계획 진행률</span></th>
+							<th><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="해당 작업의 실제 시작일과 오늘 날짜를 비교하여 진행률을 표시합니다.">실제 진행률</span></th>
+						</tr>
+					</thead>
+					<!-- 업무구분 등 WBS 구분열 끝-->
+					<!-- WBS 출력 -->
+					<tbody id='tbody'>
+					</tbody>
+					<!-- WBS 출력 끝-->
+					<tfoot id="tfooter">
+						<tr>
+							<td colspan="8"></td>
+							<td><span class="simptip-position-top simptip-movable half-arrow simptip-multiline simptip-smooth"
+							data-tooltip="모든 작업의 진행률을 합산해 총 진행률을 나타냅니다.">총 진행률</span></td>
+							<td class="planTotalProgress"></td>
+							<td class="realTotalProgress"></td>
+						</tr>
+					</tfoot>
+				</table>
+			</form>
+			<div class="btn_wrap">
+				<div class="box_right">
+					<a class="btn btn_point" onclick="location.href='/user/selectProjectList'">프로젝트 목록</a>
+					<form id="completeProjectFrm" action="completeProject" style="display: inline">
+						<input type="hidden" name="prjCode" id="prjCode" th:value="${prjInfo.prjCode}">
+						<a class="btn btn_point" id="completeProjectBtn" onclick="completeProject()">프로젝트 완료</a>
+					</form>
+					<a class="btn btn_point" id="viewCalendarBtn" onclick="viewCalendarModal()">달력</a>
+					<a class="btn btn_point" id="checkListRemoveBtn" onclick="checkListRemove()">작업 삭제</a>
+					<a class="btn btn_point" id="insertProjectWbsListBtn" onclick="insertProjectWbsList()">저장</a>
+				</div>
+			</div>
+		</div><!-- //article end -->
+	</div><!-- //section_inner end -->
+</div><!-- //section end -->
+	<!-- 프로젝트 정보 수정 모달 -->
+	<div class="modal" id="projectUpdateModal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 id="prjAttend">프로젝트 정보 수정</h4>
+				</div>
+				<div class="modal-body">
+					<form action="/user/updateProject" method="post" id='frmUpdateProjcet' class="table_wrap view">
+						<table>
+							<colgroup>
+								<col width="100px">
+								<col width="*">
+							</colgroup>
+							<tbody>
+								<tr>
+									<th>프로젝트명</th>
+									<td>
+										<input type="hidden" name="prjCode" id="prjCode" th:value="${prjInfo.prjCode}" />
+										<input class='form-control' type="text" name="prjName" id="prjName" th:value="${prjInfo.prjName}" autocomplete="off"/>
+									</td>
+								</tr>
+								<tr>
+									<th>계약금</th>
+									<td>
+										<input class='form-control' type="number" name="prjDeposit" id="prjDeposit" th:value="${prjInfo.prjDeposit}" autocomplete="off"/>
+									</td>
+								</tr>
+								<tr>
+									<th>사업비</th>
+									<td>
+										<input class='form-control' type="number" name="prjWorkingExpenses" id="prjWorkingExpenses" th:value="${prjInfo.prjWorkingExpenses}" autocomplete="off"/>
+									</td>
+								</tr>
+								<tr>
+									<th>시작일</th>
+									<td>
+										<input class='form-control' type="date" name="prjStart" id="prjStart" th:value="${prjInfo.prjStart}" autocomplete="off" />
+									</td>
+								</tr>
+								<tr>
+									<th>종료일</th>
+									<td>
+										<input class='form-control' type="date" name="prjEnd" id="prjEnd" th:value="${prjInfo.prjEnd}" autocomplete="off"/>
+									</td>
+								</tr>
+								<tr>
+									<th>마더업체</th>
+									<td>
+										<input class='form-control' type="text" name="prjMothercompany" id="prjMothercompany" th:value="${prjInfo.prjMothercompany}" autocomplete="off"/>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="modal-footer">
+							<div class="btn_wrap">
+								<a class="btn btn_point" onclick="updateProject()">확인</a>
+								<input type="reset" class="btn btn_point" value="초기화" />	
+								<a class="btn btn_point" data-dismiss="modal">취소</a>
+							</div>						
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 프로젝트 참여인원 확인 모달 -->
+	<div class="modal" id="projectAttendMemberModal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 id="prjAttend">프로젝트 참여인원</h4>
+				<div class="table_wrap list">
+					<table>
+					<tr>
+						<th>이름</th>
+						<th>부서</th>
+						<th>팀</th>
+						<th>직급</th>
+						<th></th>
+					</tr>
+					<tr th:each="memInfos : ${memInfos}">
+						<td th:text="${memInfos.memName}"></td>
+						<td th:text="${memInfos.deptName}"></td>
+						<td th:text="${memInfos.teamName}"></td>
+						<td name="btnChk" th:text="${memInfos.ranks}"></td>
+						<td style="display: none;"><input type="hidden" name="prjCode" id="prjCodes" th:value="${prjInfo.prjCode}"></td>
+						<th:block th:if="${sessionRanks}=='부장' and ${sessionDeptName}=='개발부'">
+							<input type="hidden" id="memIds" th:value="${memInfos.memId}">
+							<td><button type="button" class="closeRed" aria-label="Close" onclick="deleteProjectAttendMember()" id="deleteProjectAttendMemberBtn" style="color: red;"><span aria-hidden="true">&times;</span></button></td>
+						</th:block> 
+						<th:block th:unless="${sessionRanks}=='부장' and ${sessionDeptName}=='개발부'">
+							<td style="display: none;"></td>
+						</th:block>
+						<th:block th:if="${sessionRanks}=='대표' or ${sessionRanks}=='이사'">
+							<td><button type="button" class="close" aria-label="Close" onclick="deleteProjectAttendMember()" id="deleteProjectAttendMemberBtn" style="color: red; float: none;"><span aria-hidden="true">&times;</span></button></td>
+						</th:block>
+						<th:block th:unless="${sessionRanks}=='대표' or ${sessionRanks}=='이사'">
+							<td style="display: none;"></td>
+						</th:block>
+					</tr>
+					</table>
+					<div class="btn_wrap">
+						<div class="box_right">
+							<a class="btn btn_point" onclick="insertProjectAttendMemberModal()">참여인원 추가</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 프로젝트 참여인원 추가 모달 -->
+	<div class="modal" id="insertProjectAttendMemberModal" role="dialog" style="z-index: 9999;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 id="prjAttend">프로젝트 참여인원</h4>
+				<div class="table_wrap list">
+					<table>
+						<tr>
+							<th><input type="checkbox" name="allCheckBox" id="allCheckBox"></th>
+							<th>이름</th>
+							<th>부서</th>
+							<th>팀</th>
+							<th>직급</th>
+						</tr>
+						<tr th:each="worker : ${members}">
+							<td><input type="checkbox" name="memId" id="memId" class="checkBox" th:value="${worker.memId}"></td>
+							<td th:text="${worker.memName}"></td>
+							<td th:text="${worker.deptName}"></td>
+							<td th:text="${worker.teamName}"></td>
+							<td th:text="${worker.ranks}"></td>
+							<td style="display: none;"><input type="hidden" name="prjCode" id="prjCode" th:value="${prjInfo.prjCode}"></td>
+						</tr>
+					</table>
+				</div>				
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" onclick="insertProjectAttendMembersAjax()">프로젝트 참여인원 선택 완료</a>
+					</div>
+				</div>				
+			</div>
+		</div>
+	</div>
+	<!-- WBS리스트 달력 모달 -->
+	<div class="modal" id="viewCalendarModal" role="dialog" style="z-index: 9999;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4>달력</h4>
+				</div>
+				<div class="modal-body">
+					<div id='calendar'></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- WBS리스트 달력 모달 끝-->
+</body>
+</html>

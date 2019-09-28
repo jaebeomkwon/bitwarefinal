@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+		xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>위험관리대장</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectRisk.js}"></script>
+
+<script src="http://malsup.github.com/jquery.form.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/jquery-multifile@2.2.2/jquery.MultiFile.min.js"></script>
+</th:block>
+
+
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<h2>프로젝트 위험관리대장 수정페이지</h2>
+		<div class="article">
+		<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+		<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+			<div class="table_wrap view">
+			<form action="/user/updateProjectRisk" id="updateProjectRiskUpdateForm">
+				<table>
+			<input type="hidden" name="rskCode" th:value="${rskDto.rskCode}">
+			<input type="hidden" name="prjCode" th:value="${rskDto.prjCode}">
+					<colgroup class="pc">
+						<col width="120px">
+						<col width="*">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th>제목</th>	
+							<td><input type="text" name="rskTitle" th:value="${rskDto.rskTitle}" id="rskTitle" class="w100p"></td>
+						</tr>
+						<tr>
+							<th>내용</th>	
+							<td><textarea name="rskContent" th:text="${rskDto.rskContent}" id="rskContent"></textarea></td>
+						</tr>
+						<tr>
+							<th>해결방안</th>	
+							<td><textarea name="rskSolution" th:text="${rskDto.rskSolution}" id="rskSolution"></textarea></td>
+						</tr>
+						<tr>
+							<th>처리결과</th>	
+							<td><textarea name="rskResult" th:text="${rskDto.rskResult}" id="rskResult"></textarea></td>
+						</tr>
+						<tr>
+							<th>등록일</th>
+							<th:block th:if="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'HH:mm')}"></td>
+							</th:block>
+							<th:block th:unless="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'yyyy-MM-dd')}"></td>
+							</th:block>
+						</tr>
+						<tr>
+							<th>작성자</th>	
+							<td th:text="${rskDto.memName}"></td>
+						</tr>
+						<tr>
+							<th>첨부파일</th>
+							<td>
+								<div class="file_wrap">
+									<div class="file_txt">
+										<p>파일은 <span class="txt_point_01">5개</span>까지 첨부가 가능하며, 용량은 <span class="txt_point_01">100MB</span>를 넘을 수 없습니다.</p>
+										<div id="afile3-list" style="border:1px solid #c9c9c9;min-height:50px"></div>
+									</div><!-- file_txt end -->
+									<div class="file_attach">
+										<input type="file" name="file">
+									</div>
+								</div>
+						</tr>
+					</tbody>
+				</table>
+			</form>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" th:href="@{/user/selectProjectRiskDetail(rskCode=${rskDto.rskCode})}">취소</a>
+						<a class="btn btn_point" onclick="updateProjectRisk()">수정 완료</a>	
+						<a class="btn btn_point" th:href="@{/user/selectProjectRiskList}">위험관리대장 목록</a>
+					</div>
+				</div>
+			</div><!-- table_wrap end -->
+		</div><!-- article end -->
+		</div><!-- section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

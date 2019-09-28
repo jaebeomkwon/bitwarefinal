@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+		xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>위험관리대장</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectRisk.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectRiskFile.js}"></script>
+
+<script src="http://malsup.github.com/jquery.form.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/jquery-multifile@2.2.2/jquery.MultiFile.min.js"></script>
+</th:block>
+<script>
+$(function(){
+	var projectCate = $("#prjName").val();
+	$("#projectCategory option[value="+projectCate+"]").attr("selected",true);
+})
+</script>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<h2>프로젝트 위험관리대장 작성페이지</h2>
+		<div class="article">
+		<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+		<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+		<input type="hidden" id="prjName" th:value="${prjName.prjCode}">
+			<div class="table_wrap view">
+			<form method="post" action="/user/insertProjectRisk" id="insertProjectRiskUpdateForm" enctype="multipart/form-data">
+			<input type="hidden" name="rskWriter" id="rskWriter" th:value="${sessionId}">
+			<input type="hidden" name="memName" id="memName" th:value="${sessionName}">
+			<div style="margin-bottom:20px;">
+				<select name="prjCode" id="projectCategory">
+					<option th:each=" prjInfo : ${prjInfo}" th:text="${prjInfo.prjName}" th:value="${prjInfo.prjCode}"></option>
+				</select>
+			</div>
+				<table>
+					<colgroup class="pc">
+						<col width="120px">
+						<col width="*">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th>제목</th>	
+							<td><input type="text" name="rskTitle" id="rskTitle" class="w100p"></td>
+							<input type="text" style="display: none;">
+						</tr>
+						<tr>
+							<th>내용</th>	
+							<td><textarea name="rskContent" id="rskContent"></textarea></td>
+						</tr>
+						<tr>
+							<th>해결방안</th>	
+							<td><textarea name="rskSolution" id="rskSolution"></textarea></td>
+						</tr>
+						<tr>
+							<th>처리결과</th>	
+							<td><textarea name="rskResult" id="rskResult"></textarea></td>
+						</tr>
+						<tr>
+							<th>첨부파일</th>
+							<td>
+								<div class="file_wrap">
+									<div class="file_txt">
+										<p>파일은<span class="txt_point_01">5개</span>까지 첨부가 가능하며, 용량은<span class="txt_point_01">100MB</span>를 넘을 수 없습니다.</p>
+										<div id="afile3-list" style="border: 1px solid #c9c9c9; min-height:50px"></div>
+									</div><!-- file_txt end -->
+									<div class="file_attach">
+										<input type="file" name="file">
+									</div><!-- file_attach -->
+								</div><!-- file_wrap end -->
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</form> 
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" onclick="insertProjectRisk()">등록</a>	
+						<a class="btn btn_point" onclick="cancelInsertProjectRisk()">취소</a>
+					</div>
+				</div>
+			</div><!-- table_wrap end -->
+		</div><!-- article end -->
+		</div><!-- section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

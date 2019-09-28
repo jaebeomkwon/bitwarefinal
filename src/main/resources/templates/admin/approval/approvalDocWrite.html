@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>전자결재 문서양식 작성(관리자)</title>
+
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script th:src="@{/editor/ckeditor/ckeditor.js}"></script>
+
+<script>
+$(function(){
+	CKEDITOR.replace("apdocForm",{
+		//width : '620px',  // 입력창의 넓이, 넓이는 config.js 에서 % 로 제어
+	      height : '400px',  // 입력창의 높이
+	      startupFocus : false
+		
+	});
+});
+
+window.onload=function(){
+	var apdocName = document.getElementById("apdocName").value;
+	if(apdocName != 0){
+ 	var f = document.getElementById("f").value;
+ 	$(".finalSign[value="+f+"]").attr("checked",true);
+	}
+
+	document.getElementById("writeBtn").onclick=function(){
+		var apdocName = document.getElementById("apdocName").value;
+		var apdocForm = document.getElementById("apdocForm").value;
+		var found = null;
+		var finalSign = document.getElementsByName("finalSign");
+		for(var i=0; i<finalSign.length; i++) {
+	        if(finalSign[i].checked == true)
+	            found = finalSign[i];
+	    }
+		
+		if(apdocName==""){
+			alert("문서명을 입력하세요");
+			document.getElementById("apdocName").focus();
+			return;
+		}
+// 		if(apdocForm==""){
+// 			alert("내용을 입력하세요");
+// 			document.getElementById("apdocForm").focus();
+// 			return;
+// 		}
+		if(found == null){
+	    	alert("최종결재자를 선택해 주세요");
+	    	return;
+	    }
+		document.getElementById("form1").submit();
+	}
+}
+</script>
+
+</head>
+<body>
+
+<div th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+<div class="section_inner">
+<!-- //여기서 부터 긁어가세요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+<!-- //클래스명 하나도 빼지 말고 다 넣어주세요  -->
+<div class="article">
+	<div class="table_wrap write">
+		<h2>문서양식 등록</h2>
+		<form th:action="@{/admin/insertApprovalDoc}" method="post" name="form1" id="form1">
+		<th:block th:if="${apdocDto?.apdocNo}">
+		<input type="hidden" name="apdocNo" id="apdocNo" th:value="${apdocDto?.apdocNo}">
+		<input type="hidden" name="f" id="f" th:value="${apdocDto?.finalSign}">
+		</th:block>
+		<table>
+			<colgroup class="pc">
+				<col width="120px">
+				<col width="*">
+			</colgroup>
+			<tbody>
+				<tr>
+					<th>문서명</th>
+					<td><input name="apdocName" id="apdocName" type="text" class="w100p" th:value="${apdocDto?.apdocName}" autocomplete="off"></td>
+				</tr>
+				
+				<tr>
+					<th>내용</th>
+					<td><textarea name="apdocForm" cols="50" rows="10" id="apdocForm" th:utext="${apdocDto?.apdocForm}"></textarea></td>
+				</tr>
+				<tr>
+				<th>최종 결재자</th>
+				<td>
+				<label>팀장<input type="radio" name="finalSign" class="finalSign" value="2" /></label>
+				<label>부장<input type="radio" name="finalSign" class="finalSign" value="3" /></label>
+				<label>이사<input type="radio" name="finalSign" class="finalSign" value="4" /></label>
+				<label>대표<input type="radio" name="finalSign" class="finalSign" value="5" /></label>		
+				</td>
+				</tr>
+			</tbody>
+		</table>
+<!-- 		<input type="submit" class="btn btn_point" value="등록"> -->
+		</form>
+	</div><!-- //table_wrap -->
+	<div class="btn_wrap">
+		<div class="box_right">
+			<input type="button" class="btn btn_point" id="writeBtn" value="등록">
+			<a class="btn btn_point" th:href="@{/admin/selectApprovalDocList}">취소</a>
+			<a class="btn btn_point" th:if="${apdocDto?.apdocNo != null}" th:href="@{/admin/deleteApprovalDoc(apdocNo=${apdocDto.apdocNo})}">게시글삭제</a>
+		</div>
+	</div>
+	
+</div>
+<!-- //여기까지!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+
+</div><!-- section_inner end -->
+</div>
+</body>
+</html>

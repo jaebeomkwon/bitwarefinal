@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorator="layout/default">
+<head>
+<meta charset="UTF-8">
+<title>메인페이지</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<style>
+.adminLogo{}
+h3{position: fixed;display:inline-block;transform:rotate(90deg);font-size: 60px;bottom: 212px;right: -48px;color: #888;}
+h4{position: fixed;display:inline-block;transform:rotate(90deg);font-size: 140px;bottom: 225px;right: -250px;font-weight: 600;color: #bbb;}
+</style>
+</head>
+<body>
+<div th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+
+<div class="section_inner">
+	<div class="adminLogo">
+		<h3>ADMINISTRATOR</h3>
+		<h4>BITWARE</h4>
+	</div>
+</div>
+</div>
+</body>
+</html>

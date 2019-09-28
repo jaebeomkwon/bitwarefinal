@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="asideFragment" class="aside">
+	<ul class="aside_con">
+		<li class="dep1 have"><a href="#">커뮤니티</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/selectNoticeList}">공지사항</a></li>
+				<li><a th:href="@{/user/selectAnonymousBoardList}">익명 게시판</a></li>
+				<li><a th:href="@{/user/selectDocCenterList}">자료실</a></li>
+				<li><a th:href="@{/user/selectMeetingroomReservationList}">회의실 예약</a></li>
+				<li><a th:href="@{/user/selectCarReservationList}">법인차량 예약</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">전자결재</a>
+			<ul class="dep2ul">
+<!-- 				<li><a href="#" id="wrtBnt">기안하기</a></li> -->
+				<li><a id="wrtBnt">기안하기</a></li>
+				<li><a th:href="@{/user/selectApprovalListTo}">결재 할(한) 문서</a></li>
+				<li><a th:href="@{/user/selectApprovalListToBe}">결재 받을(은) 문서</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">프로젝트</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/selectProjectList}">전체 프로젝트</a></li>
+				<li><a th:href="@{/user/selectAttendingProjectList}">참여중인 프로젝트</a></li>
+				<li><a th:href="@{/user/selectEndProjectList}">완료된 프로젝트</a></li>
+				<li><a th:href="@{/user/selectProjectRiskList}">위험관리대장</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">주소록</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=임원진}" id="toggleOpenCheck">조직도</a></li>
+				<li><a th:href="@{/user/selectClientList}">고객사</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">마이페이지</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/mypage}">내 정보</a></li>
+				<li><a th:href="@{/user/selectCommuteList}">근태 및 휴가</a></li>
+			</ul>
+		</li>
+	</ul>
+	<div>
+		<th:block th:replace="approval/approvalList :: approvalFragment"></th:block>
+	</div>
+</div><!-- //aside end -->
+
+<!-- Community -->
+<div th:fragment="asideFragmentCommunity" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1"><a th:href="@{/user/selectNoticeList}">공지사항</a></li>
+		<li class="dep1"><a th:href="@{/user/selectAnonymousBoardList}">익명 게시판</a></li>
+		<li class="dep1"><a th:href="@{/user/selectDocCenterList}">자료실</a></li>
+		<li class="dep1"><a th:href="@{/user/selectMeetingroomReservationList}">회의실 예약</a></li>
+		<li class="dep1"><a th:href="@{/user/selectCarReservationList}">법인차량 예약</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- Approval -->
+<div th:fragment="asideFragmentApproval" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1" ><a href="#" id="wrtBnt">기안하기</a></li>
+<!-- 		<li class="dep1"><a th:href="@{/user/selectApprovalDocList}">기안하기</a></li> -->
+		<li class="dep1"><a th:href="@{/user/selectApprovalListTo}">결재 할(한) 문서</a></li>
+		<li class="dep1"><a th:href="@{/user/selectApprovalListToBe}">결재 받을(은) 문서</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- Project -->
+<div th:fragment="asideFragmentProject" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1"><a th:href="@{/user/selectProjectList}">전체 프로젝트</a></li>
+		<li class="dep1"><a th:href="@{/user/selectAttendingProjectList}">참여중인 프로젝트</a></li>
+		<li class="dep1"><a th:href="@{/user/selectEndProjectList}">완료된 프로젝트</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- Mypage -->
+<div th:fragment="asideFragmentMypage" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1"><a th:href="@{/user/mypage}">내 정보</a></li>
+		<li class="dep1"><a th:href="@{/user/selectCommuteList}">근태 및 휴가</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- OrganizationChart -->
+<div th:fragment="asideFragmentOrganizationChart" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1 have"><a href="#" id="toggleOpenCheck">조직도</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=임원진}">임원진</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=지원부}">지원부</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=영업부}">영업부</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=개발부}">개발부</a></li>
+			</ul>
+		</li>
+		<li class="dep1"><a th:href="@{/user/selectClientList}">고객사</a></li>
+	</ul>
+	
+
+	
+</div><!-- //aside end -->
+

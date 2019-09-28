@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>공지사항 (관리자)</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script th:src="@{/editor/ckeditor/ckeditor.js}"></script>
+<script>
+$(function(){
+	CKEDITOR.replace("ntContent");
+});
+</script>
+<script>
+<!--image resize-->
+$(document).on('mouseout','.fileDrop',function(){
+	$(".resizable img").resizable();
+});
+</script>
+<script>
+$(function(){
+	$(".uploadList").on("click","span",function(e){
+		var that=$(this); //클릭한 span 태그
+		$.ajax({
+			url:"/admin/deleteNoticeFileAjax",
+			type:"post",
+			data:{fileUrl:$(this).attr("data-src")},
+			dataType:"text",
+			success:function(result){
+				if(result=="deleted"){
+					that.parent("div").remove();
+				}
+			}
+		});
+	});
+	$(".fileDrop").on("dragenter dragover",function(e){
+		e.preventDefault();
+	});
+	$(".fileDrop").on("drop",function(e){
+		e.preventDefault();
+		var files=e.originalEvent.dataTransfer.files;
+		var file=files[0];
+		var formData=new FormData();
+		formData.append("file",file);
+		$.ajax({
+			url: "/admin/uploadAjax",
+			data: formData,
+			dataType: "text",
+			processData: false,
+			contentType: false,
+			type: "post",
+			success:function(fileUrl){
+				var str="";
+				if(checkImageType(fileUrl)){
+					str="<div><div class='resizable ui-widget-content' style='border: 0px solid #c5c5c5;'>";
+					str+="<img src="+fileUrl+" style='height:100px'></div>";
+					str+="<a href='/admin/displayFile?fileUrl="+fileUrl+"'>"+getFileName(fileUrl)+"</a><span data-src="+fileUrl+">[삭제]</span></div>";
+				}else{
+					str="<div><div class='resizable ui-widget-content' style='border: 0px solid #c5c5c5;'>";
+					str+="<img src='/images/fileDoc.png' style='height:100px'></div>";
+					str+="<a href='/admin/displayFile?fileUrl="+fileUrl+"'>"+getFileName(fileUrl)+"</a><span data-src="+fileUrl+">[삭제]</span></div>";
+				}
+				$(".uploadList").append(str);
+			}
+		});
+	});
+});
+function getFileName(fileUrl){
+	var idx=fileUrl.indexOf("_")+1;
+	return fileUrl.substr(idx);
+}
+function checkImageType(fileUrl){
+	var pattern=/jpg|gif|png|jpeg/i; 
+	return fileUrl.match(pattern); 
+}
+</script>
+</head>
+<body>
+
+<div th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+<div class="section_inner">
+	<form th:action="@{/admin/insertNotice}" method="post">
+		<h2>공지사항</h2>
+		<div class="article">
+			<div class="table_wrap view">
+				<table>
+					<colgroup class="pc">
+						<col width="120px">
+						<col width="*">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th th:text="분류"></th>
+							<td>
+								<select name="ntCate">
+						        	<option value="일반">일반</option>
+						        	<option value="개발">개발</option>
+						        	<option value="영업">영업</option>
+						        </select>
+						    </td>
+						</tr>
+						<tr>
+							<th th:text="제목" ></th>
+							<td><input name="ntTitle" type="text" class="w100p" required></td>
+						</tr>
+						<tr>
+							<th th:text="작성자"></th>
+							<td><span sec:authentication="principal.member.memName"></span></td>
+						</tr>
+						<tr>
+							<th th:text="내용"></th>
+							<td><textarea name="ntContent" id="ntContent"></textarea></td>
+						</tr>
+						<tr>
+							<th th:text="첨부파일"></th>
+							<td th:align="left" class="fileDrop" height="200px">
+								<div> 첨부파일을 드래그앤 드롭 하여 등록하세요
+									<div class="uploadList"></div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a th:href="@{/admin/selectNoticeList}" class="btn btn_point">목록보기</a>
+						<input type="submit" class="btn btn_point" value="등록">
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div><!-- section_inner end -->
+</div>
+</body>
+</html>

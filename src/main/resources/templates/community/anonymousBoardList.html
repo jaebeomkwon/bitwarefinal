@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>익명게시판 목록페이지</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script>
+$(document).ready(function() {
+	$("#allCheckBox").click(function(){
+		var chk = $("#allCheckBox").prop("checked");
+		if(chk){
+			$(".checkBox").prop("checked",true);
+		}else{
+			$(".checkBox").prop("checked",false);
+		}
+	});
+	$(".checkBox").click(function(){
+		$("#allCheckBox").prop("checked",false);
+	});
+	$("#deleteBtn").click(function(){
+		var confirm_val = confirm("정말 삭제하시겠습니까?");
+		if(confirm_val){
+			var checkBoxArr = new Array();
+			$("input[class='checkBox']:checked").each(function(){
+				checkBoxArr.push($(this).val());
+			})
+			$.ajax({
+				url:"/user/deleteAnonymousBoardCheckBox",
+				type:"post",
+				data:{checkBoxArr:checkBoxArr},
+				success:function(result){
+					alert(result);
+					location.href="/user/selectAnonymousBoardList";
+				}
+			});
+		}
+	});
+});
+</script>
+</head>
+<body>
+
+<div sec:authorize="hasRole('ROLE_ADMIN')" th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+<div sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')" th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div sec:authorize="hasRole('ROLE_ADMIN')" th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+<div sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')" th:replace="fragments/aside :: asideFragment"></div>
+<div class="section_inner">
+	<h2 sec:authorize="hasRole('ROLE_ADMIN')">익명게시판 (관리자)</h2>
+	<h2 sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')">익명게시판</h2>
+	<div class="article">
+		<!-- 검색 시작 -->
+		<form th:action="@{/user/selectAnonymousBoardList}">
+			<div class="board_search">
+				<div class="board_search_inner">
+					<div class="select_wrap">
+				        <select name="searchCondition" id="category">
+				        	<option value="btitle">제목</option>
+				        	<option value="bcontent">내용</option>
+				        </select>
+				    </div>
+				    <div class="search">
+				        <input name="searchKeyword" id="keyword" type="text">
+				        <input type="submit" value="검색">
+				    </div>
+				</div>
+			</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		<div class="table_wrap list">
+			<table>
+				<colgroup>
+					<col width="80px" sec:authorize="hasRole('ROLE_ADMIN')">
+					<col width="80px">
+					<col width="*">
+					<col width="130px">
+					<col width="100px">
+				</colgroup>
+				<thead>
+					<tr>
+						<th sec:authorize="hasRole('ROLE_ADMIN')"><input type="checkbox" name="allCheckBox" id="allCheckBox"></th>
+						<th>번호</th>
+						<th>제목</th>
+						<th>날짜</th>
+						<th>조회수</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="paging:${pagingList}">
+						<td sec:authorize="hasRole('ROLE_ADMIN')"><input type="checkbox" name="checkBox" class="checkBox" th:value="${paging.anonymousBoard.bno}"></td>
+						<td th:text="${paging.count}"></td>
+						<td class="tit" style="text-align: left;"><span th:each="num:${paging.anonymousBoard.bindentcnt}"><span>&nbsp;</span></span>
+							<span th:if="${paging.anonymousBoard.bindent>0 }">
+								<a th:href="@{/user/selectAnonymousBoard(bno=${paging.anonymousBoard.bno})}" th:text="'re:'+${paging.anonymousBoard.btitle}"></a>
+							</span>
+							<span th:unless="${paging.anonymousBoard.bindent>0 }">
+								<a th:href="@{/user/selectAnonymousBoard(bno=${paging.anonymousBoard.bno})}" th:text="${paging.anonymousBoard.btitle}"></a>
+							</span>
+						</td>
+						<th:block th:if="${today==#dates.format(paging.anonymousBoard.bdate,'yyyy-MM-dd')}">
+							<td th:text="${#dates.format(paging.anonymousBoard.bdate,'HH:mm')}"></td>
+						</th:block>
+						<th:block th:unless="${today==#dates.format(paging.anonymousBoard.bdate,'yyyy-MM-dd')}">
+							<td th:text="${#dates.format(paging.anonymousBoard.bdate,'yyyy-MM-dd')}"></td>
+						</th:block>
+						<td class="cnt" th:text="${paging.anonymousBoard.bcnt}"></td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="btn_wrap">
+				<div class="box_right">
+					<input sec:authorize="hasRole('ROLE_ADMIN')" type="button" id="deleteBtn" class="btn btn_point" value="삭제(관리자)">
+					<a th:href="@{/user/insertAnonymousBoardView}" class="btn btn_point">등록</a>
+				</div>
+			</div>
+		</div>
+		<div class="paging">
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/user/selectAnonymousBoardList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+			</span>
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/user/selectAnonymousBoardList(curPage=${page.prevPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+			</span>
+			<span th:each="num:${block}">
+				<span th:if="${num==page.curPage }">
+					<a th:href="@{/user/selectAnonymousBoardList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+				</span>
+				<span th:unless="${num==page.curPage }">
+					<a th:href="@{/user/selectAnonymousBoardList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+				</span>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/user/selectAnonymousBoardList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/user/selectAnonymousBoardList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+			</span>
+		</div><!-- //paging -->
+	</div>
+</div><!-- //section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

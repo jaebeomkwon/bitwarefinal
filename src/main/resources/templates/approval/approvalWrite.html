@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>기안</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script th:src="@{/editor/ckeditor/ckeditor.js}"></script>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+
+<script src="http://malsup.github.com/jquery.form.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/jquery-multifile@2.2.2/jquery.MultiFile.min.js"></script>
+</th:block>
+
+
+<script>
+$(function(){
+	CKEDITOR.replace("apContent",{
+		//width : '620px',  // 입력창의 넓이, 넓이는 config.js 에서 % 로 제어
+	      height : '400px',  // 입력창의 높이
+	      startupFocus : false
+		
+	});
+	
+	
+	document.getElementById("writeBtn").onclick=function(){
+		var apTitle = document.getElementById("apTitle").value;
+		var apContent = document.getElementById("apContent").value;
+		if(apTitle==""){
+			alert("문서명을 입력하세요");
+			document.getElementById("apTitle").focus();
+			return;
+		}
+		if(apContent==""){
+			alert("내용을 입력하세요");
+			document.getElementById("apContent").focus();
+			return;
+		}
+		document.getElementById("multiform").submit();
+	}
+});
+
+$(function(){ // wait for page to load
+	$('#multiform input[name=file]').MultiFile({
+        max: 5, //업로드 최대 파일 갯수 (지정하지 않으면 무한대)
+        accept: 'jpg|png|txt|xls|hwp|doc', //허용할 확장자(지정하지 않으면 모든 확장자 허용)
+        maxfile: 1024, //각 파일 최대 업로드 크기
+        maxsize: 3024,  //전체 파일 최대 업로드 크기
+        STRING: { //Multi-lingual support : 메시지 수정 가능
+            remove : "제거", //추가한 파일 제거 문구, 이미태그를 사용하면 이미지사용가능
+            duplicate : "$file 은 이미 선택된 파일입니다.", 
+            denied : "$ext 는(은) 업로드 할수 없는 파일확장자입니다.",
+            selected:'$file 을 선택했습니다.', 
+            toomuch: "업로드할 수 있는 최대크기를 초과하였습니다.($size)", 
+            toomany: "업로드할 수 있는 최대 갯수는 $max개 입니다.",
+            toobig: "$file 은 크기가 매우 큽니다. (max $size)"
+        },
+        list:"#afile3-list" //파일목록을 출력할 요소 지정가능
+    });
+});
+</script>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section" >
+<div th:replace="fragments/aside :: asideFragment"></div>
+
+<div class="section_inner">
+<!-- //여기서 부터 긁어가세요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+<!-- //클래스명 하나도 빼지 말고 다 넣어주세요  -->
+<h2 th:text="${approvalDocument.apdocName} + '&nbsp;기안하기'"></h2>
+<div class="article">
+	<div class="table_wrap write">
+	<form method="post" th:action="@{/user/insertApproval}" enctype="multipart/form-data" name="multiform" id="multiform">
+		<input type="hidden" name="apdocNo" th:value="${approvalDocument.apdocNo}">
+		<input type="hidden" name="finalSign" th:value="${approvalDocument.finalSign}">
+		<table>
+			<colgroup class="pc">
+				<col width="120px">
+				<col width="*">
+			</colgroup>
+			<tbody>
+				<tr>
+					<th>제목</th>
+					<td><input type="text" name="apTitle" class="w100p" id="apTitle" th:value="${approvalDocument.apdocName}+'_'"></td>
+				</tr>
+				<tr>
+					<th>내용</th>
+					<td><textarea class="w100p" name="apContent" cols="50" rows="50" id="apContent" th:utext="${approvalDocument.apdocForm}"></textarea></td>
+				</tr>
+				<tr>
+					<th>첨부파일</th>
+					<td>
+						<div class="file_wrap">
+							<div class="file_txt">
+								<p>파일은 <span class="txt_point_01">5개</span>까지 첨부가 가능하며, 용량은 <span class="txt_point_01">100MB</span>를 넘을 수 없습니다.</p>
+								<div id="afile3-list" style="border:1px solid #c9c9c9;min-height:50px"></div>
+							</div> <!-- //file_txt -->
+							<div class="file_attach">
+<!-- 								<input name="file" type="file" id="in_file_01"> -->
+<!-- 								<label for="in_file_01" class="btn btn_file" >파일첨부</label> -->
+								<input type="file" name="file">
+<!-- 								<a href="#" class="btn btn_file">파일삭제</a> -->
+							</div>  <!-- //file_attach -->
+								
+						</div> <!-- //file_wrpa -->
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		</form>
+		
+<!-- 		<input class="btn btn_point" type="submit" value="등록"> -->
+	</div><!-- //table_wrap -->
+
+	<div class="btn_wrap">
+		<div class="box_right">
+<!-- 			<a class="btn btn_point" th:href="@{/user/insertApproval}">등록</a> -->
+			<a class="btn btn_point" th:href="@{/user/selectApprovalListToBe}">취소</a>
+			<input type="button" class="btn btn_point" id="writeBtn" value="등록">
+		</div>
+	</div>
+</div>
+
+</div><!-- //section_inner end -->
+<!-- //여기까지!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+</div><!-- //section end -->
+
+
+<script>
+
+/*jQuery form 플러그인을 사용하여 폼데이터를 ajax로 전송*/
+
+var downGroupCnt =0; //다운로드그룹 개수카운트
+
+$(function(){
+    
+    //폼전송 : 해당폼의 submit 이벤트가 발생했을경우 실행  
+    $('#multiform').ajaxForm({
+       cache: false,
+       dataType:"json",
+       //보내기전 validation check가 필요할경우
+       beforeSubmit: function (data, frm, opt) {
+           //console.log(data);
+           alert("전송전!!");
+           return true;
+       },
+       //submit이후의 처리
+       success: function(data, statusText){
+           
+           alert("전송성공!!");
+           console.log(data); //응답받은 데이터 콘솔로 출력         
+           
+           output(data); //받은 정보를 화면 출력하는 함수 호출
+       },
+       //ajax error
+       error: function(e){
+           alert("에러발생!!");
+           console.log(e);
+       }                               
+    });
+});
+
+//전달받은 정보를 가지고 화면에 보기 좋게 출력
+function output(data) {
+    //업로드한 파일을 다운로드할수있도록 화면 구성
+    $("#result").append("<h3>("+(++downGroupCnt)+") 다운로드</h3>");
+    $("#result").append("제목:"+data.title+"<br/>");
+    $("#result").append("설명:"+data.description+"<br/>");
+  
+    if(data.file && data.file.length != 0){
+        $("#result").append("파일:<br/>");           
+        $.each(data.file, function(index, item){
+            //var link = "fileDownload2?f="+item.fileName+"&of="+item.uploadedFileName;
+            $("#result").append("<a href='"+ item.downlink +"' download>"+item.fileName+"</a>");
+           $("#result").append("<br/>");                   
+        });
+    }       
+    
+    $('#multiform')[0].reset(); //폼 초기화(리셋);
+    //$('#multiform').resetForm(); //(jQuery.Form 플러그인 메서드)
+    //$('#multiform').clearForm(); //(jQuery.Form 플러그인 메서드)  
+    $('#multiform input:file').MultiFile('reset'); //멀티파일 초기화        
+}
+</script>
+
+</body>
+</html>

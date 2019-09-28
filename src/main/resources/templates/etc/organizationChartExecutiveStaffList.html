@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>조직도</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<style>
+	.title{margin-bottom:15px;}
+	.title p{font-weight:600;}
+</style>
+<script>
+$(function(){
+	var tabCheck = document.getElementById("tabCheck").value;
+ 	switch(tabCheck){
+ 	case "임원진": document.getElementById("executive").className="on";
+ 	break;
+ 	case "지원부": document.getElementById("surpport").className="on";
+ 	break;
+ 	case "영업부": document.getElementById("sales").className="on";
+ 	break;
+ 	case "개발부": document.getElementById("dev").className="on";
+ 	break;
+ 	}
+});
+</script>
+</head>
+<body>
+
+<div sec:authorize="hasRole('ROLE_ADMIN')" th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+<div sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')" th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div sec:authorize="hasRole('ROLE_ADMIN')" th:replace="fragments/asideAdmin :: asideFragmentAdminOrganizationChart"></div>
+<div sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')" th:replace="fragments/aside :: asideFragment"></div>
+<div class="section_inner">
+	<h2 sec:authorize="hasRole('ROLE_ADMIN')">조직도 (관리자)</h2>
+	<h2 sec:authorize="hasAnyRole('ROLE_USER','ROLE_PL','ROLE_PM')">조직도</h2>
+	<div class="article">
+		<div class="tab2">
+			<input type="hidden" id="tabCheck" th:value="${deptName}">
+			<ul>
+				<li id="executive"><a th:href="@{/user/selectOrganizationChartList?deptName=임원진}">임원진</a></li>
+				<li id="surpport"><a th:href="@{/user/selectOrganizationChartList?deptName=지원부}">지원부</a></li>
+				<li id="sales"><a th:href="@{/user/selectOrganizationChartList?deptName=영업부}">영업부</a></li>
+				<li id="dev"><a th:href="@{/user/selectOrganizationChartList?deptName=개발부}">개발부</a></li>
+			</ul>
+		</div>
+		
+		<th:block th:each="repetition:${repetitions}">
+		<div class="title">
+			<p th:text="${repetition.ranks.ranks}"></p>
+		</div>
+		<div class="table_wrap list mb20">
+			<table>
+				<colgroup>
+					<col width="50px">
+					<col width="80px">
+					<col width="80px">
+					<col width="50px">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>이름</th>
+						<th>전화번호</th>
+						<th>내선번호</th>
+						<th>직책</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="executiveStaff:${repetition.executiveStaffList}">
+						<td th:text="${executiveStaff.memName}"></td>
+						<td th:text="${executiveStaff.memTel}"></td>
+						<td th:text="${executiveStaff.memOfficeTel}"></td>
+						<td th:text="${executiveStaff.ranks.ranks}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		</th:block>
+	</div>
+</div><!-- //section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>자료실</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<script>
+$(function(){
+	var cate = $("#searchCondition").val();
+	$("#category option[value="+cate+"]").attr("selected",true);
+	
+	var keyword = $("#searchKeyword").val();
+	$("#keyword").val(keyword);
+});
+</script>
+<script>
+$(document).ready(function() {
+	var xOffset = 10;
+    var yOffset = 30;
+    $(document).on("mouseover",".thumbnail",function(e){
+    	$("body").append("<p id='preview'><img src='"+ $(this).attr("value") +"' height='200px' /></p>");                     
+        $("#preview")
+        	.css("top",(e.pageY - xOffset) + "px")
+            .css("left",(e.pageX + yOffset) + "px")
+            .fadeIn("fast");
+    });
+    $(document).on("mousemove",".thumbnail",function(e){
+        $("#preview")
+        	.css("top",(e.pageY - xOffset) + "px")
+            .css("left",(e.pageX + yOffset) + "px");
+    });
+    $(document).on("mouseout",".thumbnail",function(){
+       	$("#preview").remove();
+    });
+});
+</script>
+<style>
+#preview{
+	z-index: 9999;
+    position:absolute;
+    border:0px solid #ccc;
+    background:#333;
+    padding:1px;
+    display:none;
+    color:#fff;
+}
+</style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/aside :: asideFragment"></div>
+<div class="section_inner">
+	<h2>자료실</h2>
+	<div class="article">
+		<!-- 검색 시작 -->
+		<form th:action="@{/user/selectDocCenterList}">
+			<div class="board_search">
+				<div class="board_search_inner">
+					<div class="select_wrap">
+				        <select name="searchCondition" id="category">
+				        	<option value="docCate">분류</option>
+				        	<option value="docTitle">제목</option>
+				        	<option value="docContent">내용</option>
+				        </select>
+				    </div>
+				    <div class="search">
+				        <input name="searchKeyword" id="keyword" type="text">
+				        <input type="submit" value="검색">
+					</div>
+				</div>
+			</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		<div class="table_wrap list">
+			<table>
+				<colgroup>
+					<col width="80px">
+					<col width="80px">
+					<col width="*">
+					<col width="130px">
+					<col width="110px">
+					<col width="100px">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>번호</th>
+						<th>분류</th>
+						<th>제목</th>
+						<th>등록일</th>
+						<th>첨부파일</th>
+						<th>조회수</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="paging:${pagingList}">
+						<td th:text="${paging.count}"></td>
+						<td th:text="${paging.docCenter.docCate}"></td>
+				        <td class="tit">
+				        	<a th:href="@{/user/selectDocCenter(docNo=${paging.docCenter.docNo})}" th:text="${paging.docCenter.docTitle}"></a>
+				        	<span th:each="docCenterFile:${paging.docCenter.docCenterFileList}">
+				        		<span th:if="${docCenterFile.docFileType=='image'}">
+				        			<img th:src="@{/images/fileImage.png}" style="height: 13px; padding-top:6px">
+				        			<span th:text="${docCenterFile.docFileName}" class="thumbnail" th:value="${docCenterFile.docFileUrl}" style="font-size: 5px"></span>
+				        		</span>
+				        		<span th:if="${docCenterFile.docFileType=='document'}">
+				        			<img th:src="@{/images/fileDoc.png}" style="height: 13px; padding-top:6px">
+				        			<span th:text="${docCenterFile.docFileName}" style="font-size: 5px"></span>
+				        		</span>
+				        	</span>
+				        </td>
+				    	<th:block th:if="${today==#dates.format(paging.docCenter.docDate,'yyyy-MM-dd')}">
+							<td th:text="${#dates.format(paging.docCenter.docDate,'HH:mm')}"></td>
+						</th:block>
+						<th:block th:unless="${today==#dates.format(paging.docCenter.docDate,'yyyy-MM-dd')}">
+							<td th:text="${#dates.format(paging.docCenter.docDate,'yyyy-MM-dd')}"></td>
+						</th:block>
+				    	<th:block th:if="${paging.docCenter.docFileCheck=='Y'}">
+							<td class="file"><img th:src="@{/images/file.png}"></td>
+						</th:block>
+						<th:block th:unless="${paging.docCenter.docFileCheck=='Y'}">
+							<td class="file"></td>
+						</th:block>
+						<td class="cnt" th:text="${paging.docCenter.docCnt}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="paging">
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/user/selectDocCenterList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+			</span>
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/user/selectDocCenterList(curPage=${page.prevPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+			</span>
+			<span th:each="num:${block}">
+				<span th:if="${num==page.curPage }">
+					<a th:href="@{/user/selectDocCenterList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+				</span>
+				<span th:unless="${num==page.curPage }">
+					<a th:href="@{/user/selectDocCenterList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+				</span>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/user/selectDocCenterList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/user/selectDocCenterList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+			</span>
+		</div><!-- //paging -->	
+	</div>
+</div><!-- //section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

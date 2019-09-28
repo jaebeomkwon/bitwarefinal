@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+		xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>위험관리대장</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectRisk.js}"></script>
+</th:block>
+
+
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<h2>프로젝트 위험관리대장 상세페이지</h2>
+		<div class="article">
+		<input type="hidden" id="rskCode" th:value="${rskDto.rskCode}">
+		<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+		<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+		<input type="hidden" id="sessionId" th:value="${sessionId}">
+		<input type="hidden" id="rskWriter" th:value="${rskDto.rskWriter}">
+			<div class="table_wrap view">
+				<table>
+					<colgroup class="pc">
+						<col width="120px">
+						<col width="*">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th>제목</th>	
+							<td th:text="${rskDto.rskTitle}"></td>
+						</tr>
+						<tr>
+							<th>내용</th>	
+							<td th:text="${rskDto.rskContent}"></td>
+						</tr>
+						<tr>
+							<th>해결방안</th>	
+							<td th:text="${rskDto.rskSolution}"></td>
+						</tr>
+						<tr>
+							<th>처리결과</th>	
+							<td th:text="${rskDto.rskResult}"></td>
+						</tr>
+						<tr>
+							<th>등록일</th>
+							<th:block th:if="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'HH:mm')}"></td>
+							</th:block>
+							<th:block th:unless="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'yyyy-MM-dd')}"></td>
+							</th:block>
+						</tr>
+						<tr>
+							<th>작성자</th>	
+							<td th:text="${rskDto.memName}"></td>
+						</tr>
+						<tr>
+							<th>첨부파일</th>
+							<td>
+							<span th:if="${rskFileList == null}">
+								<span>첨부파일이 없습니다.</span>
+							</span>
+							<span th:unless="${rskFileList == null}">
+								<span th:each="rskFile : ${rskFileList}">
+								<input type="hidden" id="rskFileNo" th:value="${rskFile.rskFileNo}">
+								<a th:href="@{/user/downloadFiles(rskFileUrl=${rskFile.rskFileUrl}, rskFileName=${rskFile.rskFileName})}" th:name="file" th:text="${rskFile.rskFileName}" class="thumbnail" th:value="${rskFile.rskFileUrl}"></a><br>
+								</span>
+							</span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" th:href="@{/user/projectDetail(prjCode=${rskDto.prjCode})}">프로젝트 상세페이지</a>	
+						<a class="btn btn_point" th:href="@{/user/selectProjectRiskList(prjCode=${rskDto.prjCode})}">위험관리대장 목록</a>
+						<a class="btn btn_point" id="deleteProjectRiskDetailBtn" onclick="deleteProjectRisk()">삭제</a>
+						<a class="btn btn_point" id="updateProjectRiskBtn" th:href="@{/user/updateProjectRiskView(rskCode=${rskDto.rskCode})}">수정</a>
+					</div>
+				</div>
+			</div><!-- table_wrap end -->
+		</div><!-- article end -->
+		</div><!-- section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

@@ -1,0 +1,33 @@
+/* text-align */
+.tl{text-align:left !important;}
+.tr{text-align:right !important;}
+.tc{text-align:center !important;}
+
+/* margin */
+.ml5{margin-left:5px;}
+.ml10{margin-left:10px;}
+.mr5{margin-right:5px;}
+.mr10{margin-right:10px;}
+.mt5{margin-top:5px;}
+.mt10{margin-top:10px;}
+.mt30{margin-top:30px;}
+.mt40{margin-top:40px;}
+.mb5{margin-bottom:5px;}
+.mb10{margin-bottom:10px;}
+.mb20{margin-bottom:20px;}
+
+/* width */
+.w50{width:50px;}
+.w100{width:100px;}
+.w50p{width:50%;}
+.w100p{width:100%;}
+
+
+/* float */
+.fl{float:left;}
+.fr{float:right;}
+.cl{clear:both;}
+/* ellipsis */
+.ellipsis {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ellipsis3{overflow:hidden;text-overflow:ellipsis;white-space:normal;word-wrap:break-word;display:-webkit-box;-webkit-line-clamp:3;line-height:1.2;-webkit-box-orient:vertical;}
+.ellipsis5{overflow:hidden;text-overflow:ellipsis;white-space:normal;word-wrap:break-word;display:-webkit-box;-webkit-line-clamp:5;line-height:1.2;-webkit-box-orient:vertical;}

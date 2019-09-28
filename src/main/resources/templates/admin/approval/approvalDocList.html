@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>전자결재 문서양식 리스트(관리자)</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<style>
+.approvalForm ul{padding:20px;box-sizing:border-box;}
+.approvalForm ul::after{content:'';display:block;clear:both;}
+.approvalForm ul li{float:left; width:23.7%;margin-bottom:20px;margin-right:20px;height:150px;border:1px solid #3e5165;box-sizing:border-box;border-radius:10px;}
+.approvalForm ul li a{display:block;width:100%;height:50px;}
+.approvalForm ul li a .approvalImg{width:100%;height:100%;}
+.approvalForm ul li:nth-child(4n){margin-right:0;}
+</style>
+</head>
+<body>
+<div th:replace="fragments/headerAdmin :: headerFragmentAdmin"></div>
+
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/asideAdmin :: asideFragmentAdmin"></div>
+<div class="section_inner">
+<h2>문서양식 목록</h2>
+	<div class="approvalForm" align="center">
+		<div th:if="${!approvalDocList.isEmpty()}">
+			<ul>
+				<li th:each="approval:${approvalDocList}">
+					<a th:href="@{/admin/insertApprovalDocView(apdocNo=${approval.apdocNo})}" >
+					<div><span th:text="${approval.apdocName}"></span></div>
+					<div class="approvalImg"><img th:src="@{/images/approvalDocImage.png}" style="margin: 30px 25px;"/></div>
+<!-- 				<div class="approvalImg"><img th:src="@{/images/test.png}" style="margin: 30px 25px;"/></div> -->
+					</a>
+				</li>
+			</ul>
+		</div>
+		<div th:if="${approvalDocList.isEmpty()}">
+		<br><br>
+			문서 양식이 없습니다. <br>
+			문서 양식을 등록해주세요. <br><br>
+			<a class="btn btn_point" th:href="@{/admin/insertApprovalDocView}">문서양식 등록</a>
+		</div>
+	</div>
+</div><!-- section_inner end -->
+</div>
+</body>
+</html>

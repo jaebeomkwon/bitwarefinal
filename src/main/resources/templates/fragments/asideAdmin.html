@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="asideFragmentAdmin" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1 have"><a href="#">커뮤니티</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/admin/selectNoticeList}">공지사항</a></li>
+				<li><a th:href="@{/user/selectAnonymousBoardList}">익명 게시판</a></li>
+				<li><a th:href="@{/admin/selectDocCenterList}">자료실</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">전자결재</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/admin/selectApprovalDocList}">문서양식</a></li>
+				<li><a th:href="@{/admin/insertApprovalDocView}">문서양식 등록</a></li>
+			</ul>
+		</li>
+		<li class="dep1 have"><a href="#">주소록</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/admin/selectMemberList}">사원목록</a></li>
+				<li><a th:href="@{/admin/selectClientList}">고객사</a></li>
+			</ul>
+		</li>
+	</ul>
+</div><!-- //aside end -->
+
+<div th:fragment="asideFragmentAdminCommunity" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1"><a th:href="@{/admin/selectNoticeList}">공지사항</a></li>
+		<li class="dep1"><a th:href="@{/user/selectAnonymousBoardList}">익명 게시판</a></li>
+		<li class="dep1"><a th:href="@{/admin/selectDocCenterList}">자료실</a></li>
+		<li class="dep1"><a th:href="@{/user/selectMeetingroomReservationList}">회의실 예약</a></li>
+		<li class="dep1"><a th:href="@{/user/selectCarReservationList}">법인차량 예약</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- approval -->
+<div th:fragment="asideFragmentAdminApproval" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1"><a th:href="@{/admin/selectApprovalDocList}">문서양식</a></li>
+		<li class="dep1"><a th:href="@{/admin/insertApprovalDocView}">문서양식 등록</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+<!-- OrganizationChart -->
+<div th:fragment="asideFragmentAdminOrganizationChart" class="aside">
+	<div class="aside_tit">
+		<a href="#"></a>
+	</div>
+	<ul class="aside_con">
+		<li class="dep1 have"><a href="#" id="toggleOpenCheck" class="dep1 have">조직도</a>
+			<ul class="dep2ul">
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=임원진}">임원진</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=지원부}">지원부</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=영업부}">영업부</a></li>
+				<li><a th:href="@{/user/selectOrganizationChartList?deptName=개발부}">개발부</a></li>
+			</ul>
+		</li>
+		<li class="dep1"><a th:href="@{/admin/selectClientList}">고객사</a></li>
+	</ul>
+</div><!-- //aside end -->
+
+</html>

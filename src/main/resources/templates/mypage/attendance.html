@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>마이페이지</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+	<script>
+		$(document).ready(function(){
+			$('#startDate').change(function(){
+				$("#endDate").attr('min', $('#startDate').val());
+			});
+		});
+		$(document).ready(function(){
+			$('#endDate').change(function(){
+				$("#startDate").attr('max', $('#endDate').val());
+			});
+		});
+	</script>
+	<script>
+		function selectCommute() {
+			var selectCommute = document.searchCommuteForm;
+			
+			selectCommute.action = "/user/selectCommuteList"
+			selectCommute.method = "post"
+			selectCommute.submit();
+		}
+	</script>
+<script>
+$(function(){
+	var startDate = $("#startDateTemp").val();
+	$("#startDate").val(startDate);
+	
+	var endDate = $("#endDateTemp").val();
+	$("#endDate").val(endDate);
+});
+</script>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<input type="hidden" id="startDateTemp" th:value="${startDate}">
+		<input type="hidden" id="endDateTemp" th:value="${endDate}">
+		<h2>근태 및 휴가</h2>
+		<div class="article">
+			<form name="searchCommuteForm">
+				<div class="board_search">
+					<div class="board_search_inner">
+						<div class="calendar_wrap">
+							<ul>
+								<li><input type="date" id="startDate" name="startDate"><label for="startDate" class="btn_calendar"></label></li>
+								<li class="wave">~</li>
+								<li><input type="date" id="endDate" name="endDate"><label for="endDate" class="btn_calendar"></label></li>
+							</ul>
+						</div>
+						<div class="search">
+							<a href="#" class="btn_search" th:onclick="javascript:selectCommute()">검색</a>
+						</div>
+					</div>
+				</div><!-- //board_search -->
+			</form>
+			<form>
+				<div class="table_wrap list">
+					<table>
+						<colgroup>
+							<col width="*">
+							<col width="*">
+							<col width="*">
+							<col width="*">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>날짜</th>
+								<th>출근시간</th>
+								<th>퇴근시간</th>
+								<th>구분</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="commute : ${commuteList}">
+								<td th:text="${commute?.commuteDate}"></td>
+								<td th:text="${commute?.commuteOntime}"></td>
+								<td th:text="${commute?.commuteOfftime}"></td>
+								<td th:text="${commute?.commuteStatus}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div><!-- //table_wrap end -->	
+			</form>
+			<div class="paging">
+				<span th:if="${page.curBlock > 1 }">
+					<a th:href="@{/user/selectCommuteList(curPage=1,startDate=${startDate},endDate=${endDate})}" class="page prev_02">1</a>
+				</span>
+				<span th:if="${page.curBlock > 1 }">
+					<a th:href="@{/user/selectCommuteList(curPage=${page.prevPage},startDate=${startDate},endDate=${endDate})}" class="page prev_01">[이전]</a>
+				</span>
+				<span th:each="num:${block}">
+					<span th:if="${num==page.curPage }">
+						<a th:href="@{/user/selectCommuteList(curPage=${num},startDate=${startDate},endDate=${endDate})}" th:text="${num}" class="paging_click"></a>
+					</span>
+					<span th:unless="${num==page.curPage }">
+						<a th:href="@{/user/selectCommuteList(curPage=${num},startDate=${startDate},endDate=${endDate})}" th:text="${num}"></a>
+					</span>
+				</span>
+				<span th:if="${page.curBlock < page.totBlock }">
+					<a th:href="@{/user/selectCommuteList(curPage=${page.nextPage},startDate=${startDate},endDate=${endDate})}" class="page next_01">[다음]</a>
+				</span>
+				<span th:if="${page.curBlock < page.totBlock }">
+					<a th:href="@{/user/selectCommuteList(curPage=${page.totPage},startDate=${startDate},endDate=${endDate})}" th:text="${page.totPage}" class="page next_02"></a>
+				</span>
+			</div><!-- //paging -->
+		</div>
+	</div><!-- //section_inner end  -->
+</div><!-- //section end -->
+</body>
+</html>

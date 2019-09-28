@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>approval Detail</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>  -->
+
+<style type="text/css">
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 2; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%; /* Could be more or less, depending on screen size */                          
+}
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+/* SignPath talbe */
+body { background: #fff; }
+
+.section_inner::after{content:'';display:block;clear:both;}
+.signtb {
+  float:right;
+  width:300px;
+  border-collapse: collapse;
+  margin-bottom:20px;
+}  
+.signtb th {
+  color: #333333;
+  background: #e7e9ef !important;
+}
+.signtb th, .signtb td {
+  padding: 1px;
+  border: 1px solid #ddd;
+  background: #ffffff;
+}
+
+#preview{
+	z-index: 9999;
+    position:absolute;
+    border:0px solid #ccc;
+    background:#333;
+    padding:1px;
+    display:none;
+    color:#fff;
+}
+
+.signtb input[type="button"]{margin-right:0 !important;margin-top:10px;}
+.signtb input[type="button"]:last-child{margin-bottom:10px;}
+.table_wrap tbody td{vertical-align:middle;}
+</style>
+
+<script>
+$(document).ready(function() {
+	// 모달
+	window.onload=function(){
+		// 승인
+		var modal = document.getElementById('okModal');
+		document.getElementById("okBtn").onclick = function() {
+	    	modal.style.display = "block";
+		}
+		document.getElementsByClassName("close")[0].onclick = function() {
+	    	modal.style.display = "none";
+		}
+		window.onclick = function(event) { //안먹음
+	    	if (event.target == modal || event.target == modals) {
+	        	modal.style.display = "none";
+	        	modals.style.display = "none";
+	    	}
+		}
+		// 반려
+		var modals = document.getElementById('cancelModal');
+		document.getElementById("cancelBtn").onclick = function() {
+	    	modals.style.display = "block";
+		}
+		document.getElementsByClassName("close")[1].onclick = function() {
+	    	modals.style.display = "none";
+		}
+// 		window.onclick = function(event) {
+// 	    	if (event.target == modals) {
+// 	        	modals.style.display = "none";
+// 	    	}
+// 		}
+	}
+	
+	// 이미지 미리보기
+	var xOffset = 10;
+    var yOffset = 30;
+    $(document).on("mouseover",".thumbnail",function(e){
+    	$("body").append("<p id='preview'><img src='"+ $(this).attr("value") +"' height='200px' /></p>");      
+        $("#preview")
+        	.css("top",(e.pageY - xOffset) + "px")
+            .css("left",(e.pageX + yOffset) + "px")
+            .fadeIn("fast");
+    });
+    $(document).on("mousemove",".thumbnail",function(e){
+        $("#preview")
+        	.css("top",(e.pageY - xOffset) + "px")
+            .css("left",(e.pageX + yOffset) + "px");
+    });
+    $(document).on("mouseout",".thumbnail",function(){
+       	$("#preview").remove();
+    });
+    
+    
+    var cnt = $(".change th").length;
+	switch (cnt) {
+	case (cnt = 3):
+		$(".change colgroup").append("<col width='*'>");
+		break;
+	case (cnt = 4):
+		$(".change colgroup").append("<col width='*'>");
+		$(".change colgroup").append("<col width='*'>");
+		$(".signtb").css("width","400px");
+		break;
+	case (cnt = 5):
+		$(".change colgroup").append("<col width='*'>");
+		$(".change colgroup").append("<col width='*'>");
+		$(".change colgroup").append("<col width='*'>");
+		$(".signtb").css("width","500px");
+	default:
+		break;
+	}
+});
+
+
+
+</script>
+</head>
+<body>
+
+<div th:replace="fragments/header :: headerFragment"></div>
+
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+
+<div th:replace="fragments/aside :: asideFragment"></div>
+<div class="section_inner">
+
+<!-- 승인 Modal -->
+    <div id="okModal" class="modal" align="center">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>                                                               
+        <p>승인하시겠습니까?</p><br>
+        <span>
+        	<a th:href="@{/user/updateApprovalPath(apNo=${approval.apNo},finalSign=${approval.finalSign},ranksNo=${ranksNo})}" class="btn btn_point">승인</a>
+<!--         	<a href="javascript:history.back();">취소</a> -->
+        </span>
+      </div>
+    </div>
+    
+<!-- 반려 Modal -->
+    <div id="cancelModal" class="modal" align="center">
+      <div class="modal-content">
+        <span class="close">&times;</span>                                                               
+        <p>반려사유를 적어주세요</p><br>
+        <form th:action="@{/user/updateApprovalCancel(apNo=${approval.apNo})}" method="post">
+		<input type="text" name="apComment" id="apComment" style="width:600px; height:50px;"><br><br>
+        <input type="submit" class="btn btn_point" value="반려">
+<!--         <a href="javascript:history.back();">취소</a> -->
+        </form>
+        
+      </div>
+    </div>
+
+<input type="hidden" id="apNo" th:value="${approval.apNo}">
+<input type="hidden" id="memId" th:value="${sessionId}">
+<input type="hidden" id="finalSign" th:value="${approval.finalSign}">
+<input type="hidden" id="ranksNo" th:value="${ranksNo}">
+<!-- <input type="hidden" id="apFileno" th:value="${approvalFileList.apFileno}"> -->
+<h2>상세페이지</h2>
+
+<!-- //여기서 부터 긁어가세요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+<!-- //클래스명 하나도 빼지 말고 다 넣어주세요  -->
+<div class="article cl">
+	<div class="signtb table_wrap list">
+	<table class="change">
+	<colgroup>
+		<col width="*">
+		<col width="*">
+	</colgroup>
+	<thead>
+		<tr>
+			<th th:if="${firstRanksNo<=1&&approval.finalSign>=1}">사원</th>
+			<th th:if="${firstRanksNo<=2&&approval.finalSign>=2}">팀장</th>
+			<th th:if="${firstRanksNo<=3&&approval.finalSign>=3}">부장</th>
+			<th th:if="${firstRanksNo<=4&&approval.finalSign>=4}">이사</th>
+			<th th:if="${firstRanksNo<=5&&approval.finalSign>=5}">사장</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td th:if="${firstRanksNo<=1&&approval.finalSign>=1}">
+			<th:block th:if="${approval.apSignUrl1!=null}">
+				<img th:src="${approval.apSignUrl1}" width="75" height="75">
+			</th:block>
+			<th:block th:unless="${approval.apSignUrl1!=null}">
+				<th:block th:if="${ranksNo<=1&&approval.finalSign>=1}">
+					<th:block th:if="${ranksNo==1}">
+						<input type="button" class="btn_point" id="okBtn" value="승인"><br>
+						<input type="button" class="cancelBtn" id="cancelBtn" value="반려">
+					</th:block>
+					<th:block th:unless="${ranksNo==1}">
+					</th:block>
+				</th:block>
+				<th:block th:unless="${ranksNo<=1&&approval.finalSign>=1}">
+					<img th:src="@{/images/cancel.png}">
+				</th:block>
+			</th:block>
+		</td>
+		
+		<td th:if="${firstRanksNo<=2&&approval.finalSign>=2}">
+			<th:block th:if="${approval.apSignUrl2!=null}">
+				<img th:src="${approval.apSignUrl2}" width="75" height="75">
+			</th:block>
+			<th:block th:unless="${approval.apSignUrl2!=null}">
+				<th:block th:if="${ranksNo<=2 && approval.finalSign>=2}">
+					<th:block th:if="${ranksNo==2}">
+						<input type="button" class="btn_point" id="okBtn" value="승인"><br>
+<!-- 						<button id="okBtn">Open Modal</button> -->
+						<input type="button" class="cancelBtn" id="cancelBtn" value="반려">
+					</th:block>
+					<th:block th:unless="${ranksNo==2}">
+					</th:block>
+				</th:block>
+				<th:block th:unless="${ranksNo<=2&&approval.finalSign>=2}">
+					<img th:src="@{/images/cancel.png}">
+				</th:block>
+			</th:block>
+		</td>
+		
+		<td th:if="${firstRanksNo<=3&&approval.finalSign>=3}">
+			<th:block th:if="${approval.apSignUrl3!=null}">
+				<img th:src="${approval.apSignUrl3}" width="75" height="75">
+			</th:block>
+			<th:block th:unless="${approval.apSignUrl3!=null}">
+				<th:block th:if="${ranksNo<=3&&approval.finalSign>=3}">
+					<th:block th:if="${ranksNo==3}">
+						<input type="button" class="btn_point" id="okBtn" value="승인"><br>
+						<input type="button" class="cancelBtn" id="cancelBtn" value="반려">
+					</th:block>
+					<th:block th:unless="${ranksNo==3}">
+					</th:block>
+				</th:block>
+				<th:block th:unless="${ranksNo<=3&&approval.finalSign>=3}">
+					<img th:src="@{/images/cancel.png}">
+				</th:block>
+			</th:block>
+		</td>
+		
+		<td th:if="${firstRanksNo<=4&&approval.finalSign>=4}">
+			<th:block th:if="${approval.apSignUrl4!=null}">
+				<img th:src="${approval.apSignUrl4}" width="75" height="75">
+			</th:block>
+			<th:block th:unless="${approval.apSignUrl4!=null}">
+				<th:block th:if="${ranksNo<=4&&approval.finalSign>=4}">
+					<th:block th:if="${ranksNo==4}">
+						<input type="button" class="btn_point" id="okBtn" value="승인"><br>
+						<input type="button" class="cancelBtn" id="cancelBtn" value="반려">
+					</th:block>
+					<th:block th:unless="${ranksNo==4}">
+					</th:block>
+				</th:block>
+				<th:block th:unless="${ranksNo<=4&&approval.finalSign>=4}">
+					<img th:src="@{/images/cancel.png}">
+				</th:block>
+			</th:block>
+		</td>
+		
+		<td th:if="${firstRanksNo<=5&&approval.finalSign>=5}">
+			<th:block th:if="${approval.apSignUrl5!=null}">
+				<img th:src="${approval.apSignUrl5}" width="75" height="75">
+			</th:block>
+			<th:block th:unless="${approval.apSignUrl5!=null}">
+				<th:block th:if="${ranksNo<=5&&approval.finalSign>=5}">
+					<th:block th:if="${ranksNo==5}">
+						<input type="button" class="btn_point" id="okBtn" value="승인"><br>
+						<input type="button" class="cancelBtn" id="cancelBtn" value="반려">
+					</th:block>
+					<th:block th:unless="${ranksNo==5}">
+					</th:block>
+				</th:block>
+				<th:block th:unless="${ranksNo<=5&&approval.finalSign>=5}">
+					<img th:src="@{/images/cancel.png}">
+				</th:block>
+			</th:block>
+		</td>
+	</tr>
+	</tbody>
+	<tfoot>
+		<tr>
+			<td th:if="${firstRanksNo<=1&&approval.finalSign>=1}" th:text="${approval.apSignName1}"></td>
+			<td th:if="${firstRanksNo<=2&&approval.finalSign>=2}" th:text="${approval.apSignName2}"></td>
+			<td th:if="${firstRanksNo<=3&&approval.finalSign>=3}" th:text="${approval.apSignName3}"></td>
+			<td th:if="${firstRanksNo<=4&&approval.finalSign>=4}" th:text="${approval.apSignName4}"></td>
+			<td th:if="${firstRanksNo<=5&&approval.finalSign>=5}" th:text="${approval.apSignName5}"></td>
+		</tr>
+	</tfoot>
+	</table>
+	</div>
+	
+	
+	
+	<div class="table_wrap view">
+		<table>
+			<colgroup>
+				<col width="120px">
+				<col width="*">
+			</colgroup>
+			<tbody>
+				<tr>
+					<th>문서명</th>
+					<td th:text="${approval.apTitle}"></td>
+				</tr>
+				
+				<tr>
+					<th>등록일</th>
+					<th:block th:if="${today==#dates.format(approval.apInsertdate,'yyyy-MM-dd')}">
+						<td class="date" th:text="${#dates.format(approval.apInsertdate,'HH:mm')}"></td>
+					</th:block>
+					<th:block th:unless="${today==#dates.format(approval.apInsertdate,'yyyy-MM-dd')}">
+						<td class="date" th:text="${#dates.format(approval.apInsertdate,'yyyy-MM-dd')}"></td>
+					</th:block>
+				</tr>
+				<tr>
+					<th>작성자</th>
+					<td th:text=${approval.memName}></td>
+				</tr>
+				
+				<tr>
+					<th>문서내용</th>
+					<td th:utext="${approval.apContent}"></td>
+<!-- 					<td><span name="apContent" cols="50" rows="50" id="apContent" th:utext="${approval.apContent}"></span></td> -->
+				</tr>
+				
+				
+				
+				<tr>
+					<th>첨부파일</th>
+					<td>
+			
+					<span th:if="${approvalFileList.isEmpty()}">
+						<span>첨부파일이 없습니다.</span>
+					</span>
+			
+					<span th:unless="${approvalFileList.isEmpty()}">
+						<span th:each="approvalFile:${approvalFileList}">
+						<input type="hidden" id="apFileno" th:value="${approvalFile.apFileno}">
+						<a th:href="@{/user/downloadFile(apFileurl=${approvalFile.apFileurl},apFilename=${approvalFile.apFilename})}" th:name="file" th:text="${approvalFile.apFilename}" class="thumbnail" th:value=${approvalFile.apFileurl}></a><br>
+						</span>
+					</span>
+					</td>
+				</tr>
+				<th:block th:if="${approval.apComment != null}">
+				<tr>
+					<th>반려사유</th>
+					<td th:text="${approval.apComment}"></td>
+				</tr>
+				</th:block>
+			</tbody>
+		</table>
+		
+		<div class="btn_wrap">
+			<div class="box_right">
+	<!-- 			<a  class="btn btn_point" th:href="@{/user/selectApprovalListToBe}">목록</a> -->
+				<a  class="btn btn_point" href="javascript:history.back();">목록</a>
+				
+				<th:block th:if="${sessionId} == ${approval.memId}">
+				<a  class="btn btn_point" th:if="${approval.apDocstatus=='1'}" th:href="@{/user/deleteApproval(apNo=${approval.apNo})}">삭제</a>
+				<a  class="btn btn_point" th:if="${approval.apDocstatus=='1'}" th:href="@{/user/updateApprovalView(apNo=${approval.apNo})}">수정</a>
+				</th:block>
+			</div>
+		</div>
+		
+		
+<!-- 		<a  class="btn btn_point" th:href="@{/user/selectApprovalListToBe}">목록</a><br> -->
+<!-- 		<a  class="btn btn_point" th:if="${approval.apDocstatus=='1'}" th:href="@{/user/deleteApproval(apNo=${approval.apNo})}">삭제</a><br> -->
+<!-- 		<a  class="btn btn_point" th:if="${approval.apDocstatus=='1'}" th:href="@{/user/updateApprovalView(apNo=${approval.apNo})}">수정</a> -->
+	</div><!-- //table_wrap -->
+</div>
+</div>
+<!-- //section_inner end -->
+<!-- //여기까지!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+	</div> <!-- //section end -->
+</body>
+</html>
+
+
+<!-- <th:block th:if="${approval.apSignUrl5!=null}"> -->
+<!-- 			<td><img th:src="${approval.apSignUrl5}"></td> -->
+<!-- 		</th:block> -->
+<!-- 		<th:block th:unless="${approval.apSignUrl5!=null}"> -->
+<!-- 			<th:block th:if="${ranksNo<=5&&approval.finalSign>=5}"> -->
+<!-- 				<th:block th:if="${ranksNo==5}"> -->
+<!-- 					<td><input type="button" class="okBtn" value="승인"><br> -->
+<!-- 					<input type="button" class="cancelBtn" value="반려"></td> -->
+<!-- 				</th:block> -->
+<!-- 				<th:block th:unless="${ranksNo==5}"> -->
+<!-- 					<td></td> -->
+<!-- 				</th:block> -->
+<!-- 			</th:block> -->
+<!-- 		</th:block> -->

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<div th:fragment="headerFragment" class="header">
+	<h1 class="logo"><a th:href="@{/user/}">BITWARE</a></h1>
+<!-- 	<ul class="gnb"> -->
+<!-- 		<li><a th:href="@{/user/selectNoticeList}">커뮤니티</a></li> -->
+<!-- 		<li><a th:href="@{/user/selectApprovalListToBe}">전자결제</a></li> -->
+<!-- 		<li><a th:href="@{/user/selectProjectList}">프로젝트</a></li> -->
+<!-- 		<li><a th:href="@{/user/selectOrganizationChartList?deptName=임원진}">주소록</a></li> -->
+<!-- 	</ul> -->
+	<ul class="userInfo">
+		<li><a th:href="@{/user/mypage}" sec:authentication="principal.member.memName"></a><li>
+		<li class="commute on"><a id="onTime">출결</a><li>
+<!-- 		<li class="commute"><a href="#">퇴근</a><li> -->
+		<li><a th:href="@{/logout}">로그아웃</a></li>
+	</ul>
+
+	<div class="chat_wrap">
+		<div class="chat_inner">
+			<div class="btn_chat" id="btn_chat_enter">
+<!-- 				<i class="fal fa-smile" id="smile_color_change" style="color:white"></i> -->
+				<i class="fal fa-comment-smile fa-flip-horizontal smile" id="smile_color_change"></i>
+			</div>
+			<th:block th:replace="chat/chatList :: chatFragment"></th:block>
+		</div>
+	</div><!-- //chat_wrap end -->
+	<script>
+		$(function(){
+			document.getElementById("onTime").onclick=function(){
+				$.ajax({
+					url: "/user/insertCommute",
+					data: {},
+					datatype: "json",
+					success: function(result) {
+						alert(result);
+					}
+				});
+			};
+		});
+
+	</script>
+</div><!-- //header end -->
+</html>

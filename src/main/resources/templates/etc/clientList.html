@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>고객사</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<script>
+$(function(){
+	var cate = $("#searchCondition").val();
+	$("#category option[value="+cate+"]").attr("selected",true);
+	
+	var keyword = $("#searchKeyword").val();
+	$("#keyword").val(keyword);
+});
+</script>
+</head>
+<body>
+
+<div th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+<div layout:fragment="content" class="section">
+<div th:replace="fragments/aside :: asideFragment"></div>
+<div class="section_inner">
+	<h2>고객사</h2>
+	<div class="article">
+		<!-- 검색 시작 -->
+		<form th:action="@{/user/selectClientList}">
+			<div class="board_search">
+				<div class="board_search_inner">
+					<div class="select_wrap">
+				        <select name="searchCondition" id="category">
+				        	<option value="clientName">이름</option>
+				        	<option value="clientCompany">회사명</option>
+				        </select>
+				    </div>
+				    <div class="search">
+				        <input name="searchKeyword" id="keyword" type="text">
+				        <input type="submit" value="검색">
+					</div>
+				</div>
+			</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		<div class="table_wrap list">
+			<table>
+				<colgroup>
+					<col width="110px">
+					<col width="*">
+					<col width="200px">
+					<col width="80px">
+					<col width="80px">
+					<col width="80px">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>이름</th>
+						<th>전화번호</th>
+						<th>회사명</th>
+						<th>부서명</th>
+						<th>직책</th>
+						<th>비고</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="client:${clientList}">
+						<td th:text="${client.clientName}"></td>
+						<td th:text="${client.clientTel}"></td>
+						<td th:text="${client.clientCompany}"></td>
+						<td th:text="${client.clientDeptName}"></td>
+						<td th:text="${client.clientRanks}"></td>
+						<td th:text="${client.clientNote}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="paging">
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/admin/selectClientList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+			</span>
+			<span th:if="${page.curBlock > 1 }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.prevPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+			</span>
+			<span th:each="num:${block}">
+				<span th:if="${num==page.curPage }">
+					<a th:href="@{/admin/selectClientList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+				</span>
+				<span th:unless="${num==page.curPage }">
+					<a th:href="@{/admin/selectClientList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+				</span>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+			</span>
+			<span th:if="${page.curBlock < page.totBlock }">
+				<a th:href="@{/admin/selectClientList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+			</span>
+		</div><!-- //paging -->
+	</div>
+</div><!-- //section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

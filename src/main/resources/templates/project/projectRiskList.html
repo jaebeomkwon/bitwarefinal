@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+		xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+<meta charset="UTF-8">
+<title>위험관리대장</title>
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+<!-- 사용자 css 추가 -->
+<th:block layout:fragment="css">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap-theme.min.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/css/project/bootstrap.min.css}">
+</th:block>
+
+<!-- 사용자 script 추가 -->
+<th:block layout:fragment="script">
+<script type="text/javascript" th:src="@{/js/project/bootstrap.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/project/projectRisk.js}"></script>
+</th:block>
+
+<style>
+#preview{
+	z-index: 9999;
+    position:absolute;
+    border:0px solid #ccc;
+    background:#333;
+    padding:1px;
+    display:none;
+    color:#fff;
+}
+.article::after{content:'';display:block;clear:both;}
+</style>
+<script>
+$(function(){
+	var cate = $("#searchCondition").val();
+	$("#category option[value="+cate+"]").attr("selected",true);
+	
+	var projectCate = $("#prjName").val();
+	$("#projectCategory option[value="+projectCate+"]").attr("selected",true);
+	
+	var keyword = $("#searchKeyword").val();
+	$("#keyword").val(keyword);
+	
+});
+</script>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+	<!-- //무조건 section 안에서 내용 작성 -->
+	<div layout:fragment="content" class="section">
+	<div th:replace="fragments/aside :: asideFragment"></div>
+	<div class="section_inner">
+		<h2>프로젝트 위험관리대장</h2>
+		<div class="article">
+		
+		<!-- 프로젝트 전환 검색 시작 -->
+		<form th:action="@{/user/selectProjectRiskList}" class="fl">
+		<div class="board_search">
+			<div class="board_search_inner">
+				<div class="select_wrap">
+					<span>조회한 프로젝트</span>
+					<select name="prjCode" id="projectCategory">
+						<option>프로젝트 선택</option>
+						<option th:each=" prjInfo : ${prjInfo}" th:text="${prjInfo.prjName}" th:value="${prjInfo.prjCode}"></option>
+					</select>
+				</div>
+			</div>
+		</div>
+		</form>
+		<!-- 프로젝트 전환 검색 종료 -->
+		
+		<!-- 검색 시작 -->
+		<form th:action="@{/user/selectProjectRiskList}" class="fr">
+		<div class="board_search">
+			<div class="board_search_inner">
+				<div class="select_wrap">
+					<select name="searchCondition" id="category">
+						<option value="rskTitle">제목</option>
+						<option value="rskContent">내용</option>
+					</select>
+				</div>
+				<div class="search">
+					<input type="hidden" name="prjCode" th:value="${prjName.prjCode}">
+					<input type="text" name="searchKeyword" id="keyword">
+					<input type="submit" value="검색">
+				</div>
+			</div>
+		</div>
+		</form>
+		<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+		<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+		<!-- 검색 종료 -->
+		
+		<input type="hidden" id="prjName" th:value="${prjName.prjCode}">
+		
+		<input type="hidden" id="sessionRanks" th:value="${sessionRanks}">
+		<input type="hidden" id="sessionDeptName" th:value="${sessionDeptName}">
+			<div class="table_wrap list">
+				<table>
+					<colgroup>
+						<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+						<col width="50px">
+						</th:block>
+						<th:block th:unless="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+						</th:block>
+						<th:block th:if="${sessionDeptName=='경영진'}">
+						<col width="50px">
+						</th:block>
+						<th:block th:unless="${sessionDeptName=='경영진'}">
+						</th:block>
+						<col width="*">
+						<col width="110px">
+						<col width="130px">
+						<col width="110px">
+					</colgroup>
+					<thead>
+						<tr>
+							<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							<th><input type="checkbox" name="allCheckBox" id="riskAllCheckBox" onclick="riskCheckAll(this.checked)"></th>
+							</th:block>
+							<th:block th:unless="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							</th:block>
+							<th:block th:if="${sessionDeptName=='경영진'}">
+							<th><input type="checkbox" name="allCheckBox" id="riskAllCheckBox" onclick="riskCheckAll(this.checked)"></th>
+							</th:block>
+							<th:block th:unless="${sessionDeptName=='경영진'}">
+							</th:block>
+							<th>위험관리대장명</th>
+							<th>작성자</th>
+							<th>등록일</th>
+							<th>첨부파일</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="rskDto : ${rskDtos}">
+							<th:block th:if="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							<td><input type="checkbox" name="riskAllCheckBox" id="rskCode" class="riskCheckBox" th:value="${rskDto.rskCode}"></td>
+							</th:block>
+							<th:block th:unless="${sessionRanks=='부장'} and ${sessionDeptName=='개발부'}">
+							</th:block>
+							<th:block th:if="${sessionDeptName=='경영진'}">
+							<td><input type="checkbox" name="riskAllCheckBox" id="rskCode" class="riskCheckBox" th:value="${rskDto.rskCode}"></td>
+							</th:block>
+							<th:block th:unless="${sessionDeptName=='경영진'}">
+							</th:block>
+							<td class="tit"><a th:href="@{/user/selectProjectRiskDetail(rskCode=${rskDto.rskCode})}" th:text="${rskDto.rskTitle}"></a></td>
+							<td th:text="${rskDto.memName}"></td>
+						
+							<th:block th:if="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'HH:mm')}"></td>
+							</th:block>
+							<th:block th:unless="${today==#dates.format(rskDto.rskReg,'yyyy-MM-dd')}">
+								<td th:text="${#dates.format(rskDto.rskReg,'yyyy-MM-dd')}"></td>
+							</th:block>
+							
+							<th:block th:if=${rskDto.fileCheck==null}>
+								<td class="file"></td>
+							</th:block>
+							<th:block th:unless=${rskDto.fileCheck==null}>
+								<td class="file"><img th:src="@{/images/file.png}"></td>
+							</th:block>
+						</tr>
+					</tbody>
+				</table>
+				<div class="btn_wrap">
+					<div class="box_right">
+						<a class="btn btn_point" id="insertProjectRiskBtn" th:href="@{/user/insertProjectRiskView(prjCode=${prjName.prjCode})}" >위험관리대장 작성</a>
+						<a class="btn btn_point" id="deleteProjectRiskBtn" onclick="deleteProjectRiskAjax()">삭제</a>	
+					</div>
+				</div>
+			</div><!-- table_wrap end -->
+			<div th:align="center"><!-- 페이징 -->
+				<div class="paging">
+						<span th:if="${page.curBlock > 1}">
+							<a th:href="@{/user/selectProjectRiskList(curPage=${page.prevPage}, searchCondition=${search.searchCondition}, searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+						</span>
+						<span th:if="${page.curBlock > 1 }">
+							<a th:href="@{/user/selectProjectRiskList(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+						</span>
+						<span th:each="num:${block}">
+							<span th:if="${num==page.curPage }">
+								<a th:href="@{/user/selectProjectRiskList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+							</span>
+							<span th:unless="${num==page.curPage }">
+								<a th:href="@{/user/selectProjectRiskList(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+							</span>
+						</span>
+						<span th:if="${page.curBlock < page.totBlock }">
+							<a th:href="@{/user/selectProjectRiskList(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+						</span>
+						<span th:if="${page.curBlock < page.totBlock }">
+							<a th:href="@{/user/selectProjectRiskList(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+						</span>
+				</div>
+			</div><!-- 페이징 끝 -->
+		</div><!-- article end -->
+	</div><!-- section_inner end -->
+</div><!-- //section end -->
+</body>
+</html>

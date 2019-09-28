@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>결재 할 문서</title>
+
+<th:block th:replace="fragments/config :: configFragment"></th:block>
+
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+<!-- //무조건 section 안에서 내용 작성 -->
+
+<!-- //여기서 부터 긁어가세요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+<!-- //클래스명 하나도 빼지 말고 다 넣어주세요  -->
+<div layout:fragment="content" class="section">
+<script type="text/javascript">
+$(function(){
+	var status = document.getElementById("status").value;
+// 	var status2 = document.getElementById("finish").value;
+// 	alert(status);
+// 	alert(status2);
+	if(status=="1"){
+		document.getElementById("ing").className="on";
+	}else if(status=="2"){
+		document.getElementById("finish").className="on";
+	}
+	
+// 	document.getElementById("ing").onclick=function(){
+// 		document.getElementById("ing").className="on";
+// 	}
+	
+});
+</script>
+
+<div th:replace="fragments/aside :: asideFragment"></div>
+
+<div class="section_inner">
+<input type="hidden" id="status" th:value="${status}">
+		<h2>결재 할(한) 문서</h2>
+	<div class="article">
+
+			<!-- 검색 시작 -->
+			<form th:action="@{/user/selectApprovalListTo}">
+				<div class="board_search">
+					<div class="board_search_inner">
+						<div class="select_wrap">
+							<select name="searchCondition" id="category">
+								<option value="apTitle">제목</option>
+								<option value="apContent">내용</option>
+							</select>
+						</div>
+						<div class="search">
+							<input name="searchKeyword" id="keyword" type="text">
+							<input type="submit" value="검색">
+						</div>
+					</div>
+				</div>
+			</form>
+			<input type="hidden" id="searchCondition" th:value="${search.searchCondition}">
+			<input type="hidden" id="searchKeyword" th:value="${search.searchKeyword}">
+			<!-- 검색 종료 -->
+
+			<div class="table_wrap list">
+				<div class="tab2">
+					<ul>
+						<li id="ing"><a th:href="@{/user/selectApprovalListTo}">진행</a></li>
+						<li id="finish"><a th:href="@{/user/selectApprovalListFinish}">완료</a></li>
+					</ul>
+				</div>
+					<table>
+						<colgroup>
+							<col width="80px">
+							<col width="80px">
+							<col width="*">
+							<col width="110px">
+							<col width="130px">
+							<col width="110px">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>번호</th>
+								<th>분류</th>
+								<th>제목</th>
+								<th>기안자</th>
+								<th>등록일</th>
+								<th>첨부파일</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="approval,count :${approvalList}">
+								<td th:text="${count.count}"></td>
+<!-- 								<td th:text="${approval.apDocstatus}"></td> -->
+								
+								<th:block th:switch="${approval.apDocstatus}" >
+								<td th:case="1" th:text="대기"></td>
+								<td th:case="2" th:text="진행"></td>
+								<td th:case="3" th:text="반려"></td>
+								<td th:case="4" th:text="완료"></td>
+								</th:block>
+								
+								<td class="tit"><a th:href="@{/user/selectApprovalView(apNo=${approval.apNo})}" class="ellipsis" th:text="${approval.apTitle}"></a></td>
+								<td class="writer" th:text="${approval.memName}"></td>
+								
+								<th:block th:if="${today==#dates.format(approval.apInsertdate,'yyyy-MM-dd')}">
+								<td class="date" th:text="${#dates.format(approval.apInsertdate,'HH:mm')}"></td>
+								</th:block>
+								<th:block th:unless="${today==#dates.format(approval.apInsertdate,'yyyy-MM-dd')}">
+								<td class="date" th:text="${#dates.format(approval.apInsertdate,'yyyy-MM-dd')}"></td>
+								</th:block>
+								
+								<th:block th:if=${approval.fileCheck==null}>
+								<td class="file"></td>
+								</th:block>
+								<th:block th:unless=${approval.fileCheck==null}>
+								<td class="file"><img th:src="@{/images/file.png}"></td>
+								</th:block>
+							</tr>
+						</tbody>
+					</table>
+				</div><!-- //table_wrap end -->
+				
+				<!-- 페이징 -->
+			<div class="paging">
+				<span th:if="${page.curBlock > 1 }">
+					<a th:href="@{/user/selectApprovalListTo(curPage=1,searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_02">1</a>
+				</span>
+				<span th:if="${page.curBlock > 1 }">
+					<a th:href="@{/user/selectApprovalListTo(curPage=${page.prevPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page prev_01">[이전]</a>
+				</span>
+				<span th:each="num:${block}">
+					<span th:if="${num==page.curPage }">
+						<a th:href="@{/user/selectApprovalListTo(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}" class="paging_click"></a>
+					</span>
+					<span th:unless="${num==page.curPage }">
+						<a th:href="@{/user/selectApprovalListTo(curPage=${num},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${num}"></a>
+					</span>
+				</span>
+				<span th:if="${page.curBlock < page.totBlock }">
+					<a th:href="@{/user/selectApprovalListTo(curPage=${page.nextPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" class="page next_01">[다음]</a>
+				</span>
+				<span th:if="${page.curBlock < page.totBlock }">
+					<a th:href="@{/user/selectApprovalListTo(curPage=${page.totPage},searchCondition=${search.searchCondition},searchKeyword=${search.searchKeyword})}" th:text="${page.totPage}" class="page next_02"></a>
+				</span>
+			</div><!-- //paging -->
+	</div>
+</div>
+<!-- //여기까지!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+</div><!-- //section end -->
+</body>
+</html>

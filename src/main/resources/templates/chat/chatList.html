@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="../js/chat/run.js"></script>
+<style>
+	.tab ul::after{content:'';display:block;clear:both;}
+	.tab ul li{float:left;margin:0 15px;}
+	
+	.info.hidden{display:none;}
+</style>
+
+</head>
+<body>
+<div th:fragment="chatFragment" id="chatFragment">
+	<div th:each="lcList : ${lastContentList}" th:if="${sessionName == lcList.receiver}">
+		<div th:text="${lcList.content}"></div>
+	</div>
+	<div class="tab">
+		<ul id="department"></ul>
+	</div>
+	<div class="info">
+		<ul id="memberByDepartment"></ul>
+	</div>
+</div>
+</body>
+</html>
